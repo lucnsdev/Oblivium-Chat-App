@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:paddingHorizontal="@dimen/margin_3">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/button_rounded"
+            android:src="@drawable/icon_arrow_back" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/buttonMenu"
+            android:layout_toEndOf="@+id/buttonBack"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margin_2">
+
+            <TextView
+                android:id="@+id/textContact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="@string/contacts"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/contacts"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/buttonMenu"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/button_rounded"
+            android:src="@drawable/icon_arrow_more" />
+    </RelativeLayout>
+</LinearLayout>

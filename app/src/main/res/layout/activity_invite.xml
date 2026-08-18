@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <lucns.oblivium.views.BlurEffectView
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <include layout="@layout/loading" />
+
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:paddingHorizontal="@dimen/margin_3">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/button_rounded"
+            android:src="@drawable/icon_arrow_back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/roboto_thin"
+            android:text="@string/invitations"
+            android:textColor="@color/white"
+            android:textSize="36sp" />
+
+        <ImageButton
+            android:id="@+id/buttonMenu"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/button_rounded"
+            android:src="@drawable/icon_arrow_more"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_below="@+id/toolbar"
+        android:layout_marginTop="@dimen/margin_3"
+        android:background="@drawable/line_gradient" />
+
+    <RelativeLayout
+        android:id="@+id/rootContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/divider"
+        android:layout_marginTop="@dimen/margin_4">
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/list_divider"
+            android:dividerHeight="1dp"
+            android:listSelector="@android:color/transparent"
+            android:scrollbarSize="1dp"
+            android:scrollbarThumbVertical="@drawable/thumb_scrollbar"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/buttonRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button"
+            android:layout_centerInParent="true"
+            android:background="@drawable/button_transparent"
+            android:paddingHorizontal="@dimen/margin_3"
+            android:text="@string/error_retry"
+            android:textColor="@drawable/text_state"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/fab"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="@dimen/margin_7"
+            android:layout_marginBottom="@dimen/margin_7"
+            android:background="@drawable/fab"
+            android:src="@drawable/icon_invite" />
+    </RelativeLayout>
+</RelativeLayout>

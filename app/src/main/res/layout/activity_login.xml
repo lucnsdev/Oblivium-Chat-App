@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <lucns.oblivium.views.BlurEffectView
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/margin_4">
+
+        <RelativeLayout
+            android:id="@+id/rootForm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/textTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="64dp"
+                android:fontFamily="@font/roboto_thin"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+
+            <EditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/edit_text"
+                android:layout_below="@+id/textTitle"
+                android:layout_marginStart="@dimen/margin"
+                android:layout_marginTop="@dimen/margin_6"
+                android:background="@drawable/edittext_background"
+                android:digits="qwertyuiopasdfghjklzxcvbnm_@012345678"
+                android:imeOptions="actionNext"
+                android:inputType="text"
+                android:maxLength="16"
+                android:maxLines="1"
+                android:paddingStart="@dimen/margin_2"
+                android:paddingEnd="@dimen/margin_2"
+                android:textColor="@drawable/text_state"
+                android:textColorHint="@color/hint"
+                android:textCursorDrawable="@drawable/cursor" />
+
+            <TextView
+                android:id="@+id/textRecoverPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/editText"
+                android:layout_marginStart="@dimen/margin"
+                android:layout_marginTop="@dimen/margin_3"
+                android:text="@string/recover_password"
+                android:textColor="@color/gray"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/button"
+                android:layout_width="220dp"
+                android:layout_height="@dimen/button"
+                android:layout_below="@+id/textRecoverPassword"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/margin_4"
+                android:background="@drawable/button_translucent"
+                android:enabled="false"
+                android:textSize="18sp"
+                android:text="@string/next"
+                android:textColor="@drawable/text_state" />
+        </RelativeLayout>
+
+        <include layout="@layout/loading" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/textReserved"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/textVersion"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/margin"
+        android:text="@string/all_rights_reserved"
+        android:textColor="@color/gray" />
+
+    <TextView
+        android:id="@+id/textVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="@dimen/margin_3"
+        android:layout_marginBottom="@dimen/margin_3"
+        android:textColor="@color/gray_8" />
+</RelativeLayout>

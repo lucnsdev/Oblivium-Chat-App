@@ -1,0 +1,65 @@
+package lucns.oblivium.utils;
+
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.os.CombinedVibration;
+import android.os.VibrationEffect;
+import android.os.VibratorManager;
+
+import java.time.Instant;
+import java.util.Locale;
+
+import lucns.oblivium.R;
+
+public class Utils {
+
+    private static VibratorManager vibrator;
+
+    static {
+        init();
+    }
+
+    private static void init() {
+        Context context = App.getContext();
+        vibrator = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+    }
+
+    public static void vibrate(int duration) {
+        if (duration > 0) {
+            vibrator.cancel();
+            vibrator.vibrate(CombinedVibration.createParallel(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE)));
+        }
+    }
+
+    public static void vibrate() {
+        vibrator.cancel();
+        vibrator.vibrate(CombinedVibration.createParallel(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)));
+    }
+
+    public static boolean hasInternetConnection() {
+        ConnectivityManager connectivity = (ConnectivityManager) App.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivity.getActiveNetwork();
+        if (network == null) return false;
+        NetworkCapabilities capabilities = connectivity.getNetworkCapabilities(network);
+        if (capabilities == null) return false;
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
+    public static String retrieveTime(long time) {
+        time = Instant.now().getEpochSecond() - time;
+        Context c = App.getContext();
+        if (time < 60) {
+            return String.format(Locale.getDefault(), c.getString(R.string.format_few_ago), c.getString(R.string.seconds));
+        } else if (time < 3600) {
+            return String.format(Locale.getDefault(), c.getString(R.string.format_few_ago), c.getString(R.string.minutes));
+        } else if (time < 86400) {
+            return String.format(Locale.getDefault(), c.getString(R.string.format_few_ago), c.getString(R.string.hours));
+        } else if (time < 172800) {
+            return c.getString(R.string.yesterday);
+        } else {
+            return c.getString(R.string.several_days);
+        }
+    }
+}

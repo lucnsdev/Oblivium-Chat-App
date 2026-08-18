@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:background="@drawable/dialog_background"
+    android:elevation="@dimen/margin"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/margin_4"
+    android:paddingVertical="@dimen/margin_3">
+
+    <TextView
+        android:id="@+id/textTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_3"
+        android:fontFamily="@font/roboto_bold"
+        android:text="@string/checking"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <lucns.oblivium.views.HorizontalIndeterminateThreeBalls
+        android:id="@+id/threeBalls"
+        android:layout_width="36dp"
+        android:layout_height="12dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="@dimen/margin" />
+</LinearLayout>

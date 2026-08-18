@@ -1,0 +1,15 @@
+<resources>
+    <dimen name="margin">8dp</dimen>
+    <dimen name="margin_2">12dp</dimen>
+    <dimen name="margin_3">16dp</dimen>
+    <dimen name="margin_4">24dp</dimen>
+    <dimen name="margin_5">30dp</dimen>
+    <dimen name="margin_6">36dp</dimen>
+    <dimen name="margin_7">42dp</dimen>
+    <dimen name="margin_8">56dp</dimen>
+    <dimen name="edit_text">48dp</dimen>
+    <dimen name="button">48dp</dimen>
+
+    <dimen name="elevation">4dp</dimen>
+    <dimen name="dialog_width">360dp</dimen>
+</resources>

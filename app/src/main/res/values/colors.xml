@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">@android:color/white</color>
+    <color name="white_2">#d6d6d6</color>
+    <color name="white_3">#b3b3b3</color>
+    <color name="white_4">#a6a6a6</color>
+    <color name="white_5">#939393</color>
+    <color name="gray">#888888</color>
+    <color name="gray_2">#7b7b7b</color>
+    <color name="gray_3">#747474</color>
+    <color name="gray_4">#6c6c6c</color>
+    <color name="gray_5">#686868</color>
+    <color name="gray_6">#5e5e5e</color>
+    <color name="gray_7">#4d4c4c</color>
+    <color name="gray_8">#454545</color>
+    <color name="gray_9">#3d3d3d</color>
+    <color name="gray_10">#2e2e2e</color>
+    <color name="gray_11">#282828</color>
+    <color name="gray_12">#242424</color>
+    <color name="gray_13">#202020</color>
+    <color name="gray_14">#161616</color>
+    <color name="gray_15">#121212</color>
+    <color name="gray_16">#080808</color>
+    <color name="black">@android:color/black</color>
+
+    <color name="accent">#E4671F</color>
+    <color name="red">#FF3950</color>
+
+    <color name="dialog">#64242424</color>
+    <color name="dialog_border">#64D95A1A</color>
+    <color name="item_disabled">#18FFFFFF</color>
+    <color name="item_list">#18FFFFFF</color>
+    <color name="button_gradient_start">#ac4321</color>
+    <color name="button_gradient_end">#7FAC4321</color>
+    <color name="button_border">#DC5C12</color>
+    <color name="button_disabled_border">#58FFFFFF</color>
+    <color name="button_translucent">#55FFFFFF</color>
+    <color name="button_translucent_border">#90FFFFFF</color>
+    <color name="hint">#69FFFFFF</color>
+    <color name="polygon_blurred_color">#97311F</color>
+    <color name="fab_gradient_start_border">#48261a</color>
+    <color name="fab_gradient_end_border">#7d3f2a</color>
+    <color name="fab_gradient_start">#261813</color>
+    <color name="fab_gradient_end">#141312</color>
+    <color name="blue">#0085DC</color>
+    <color name="list_divider">#24000000</color>
+
+    <color name="button_translucent_positive">#3C2CA66B</color>
+    <color name="button_translucent_positive_border">#D836D085</color>
+    <color name="button_translucent_negative">#3CB8481B</color>
+    <color name="button_translucent_negative_border">#E1D9541F</color>
+</resources>

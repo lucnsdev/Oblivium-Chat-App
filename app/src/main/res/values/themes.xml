@@ -1,0 +1,31 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="MainTheme" parent="@android:style/Theme.DeviceDefault.Light.NoActionBar" >
+        <item name="android:windowLightStatusBar" >false</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+
+        <item name="android:colorSecondary">@color/accent</item>
+        <item name="android:colorControlHighlight">@color/accent</item>
+        <item name="android:colorControlActivated">@color/accent</item>
+        <item name="android:colorActivatedHighlight">@color/accent</item>
+        <item name="android:colorPrimary">@color/accent</item>
+        <item name="android:colorControlNormal">@color/accent</item>
+        <item name="android:colorAccent">@color/accent</item>
+    </style>
+
+    <style name="DialogTheme" parent="android:style/Theme.DeviceDefault.Dialog">
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="PopUpMenuTheme" parent="android:style/Theme.DeviceDefault">
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:popupBackground">@drawable/dialog_background</item>
+        <item name="android:itemBackground">@drawable/button_transparent</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>

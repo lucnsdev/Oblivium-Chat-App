@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:background="@drawable/dialog_background"
+    android:elevation="@dimen/margin"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/margin_4"
+    android:paddingVertical="@dimen/margin_3">
+
+    <TextView
+        android:id="@+id/textTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/textDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:gravity="center"
+        android:textColor="@color/gray"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/edit_text"
+        android:layout_marginTop="@dimen/margin_6"
+        android:background="@drawable/edittext_background"
+        android:digits="qwertyuiopasdfghjklzxcvbnm_@012345678"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLength="16"
+        android:maxLines="1"
+        android:paddingStart="@dimen/margin_2"
+        android:paddingEnd="@dimen/margin_2"
+        android:textColor="@drawable/text_state"
+        android:textColorHint="@color/hint"
+        android:textCursorDrawable="@drawable/cursor" />
+
+    <Button
+        android:id="@+id/buttonOne"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button"
+        android:layout_marginTop="@dimen/margin_4"
+        android:background="@drawable/button_positive"
+        android:text="@android:string/ok"
+        android:textColor="@color/white" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_3"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@drawable/line_gradient_left" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin"
+            android:layout_marginEnd="@dimen/margin"
+            android:text="@string/or"
+            android:textColor="@color/white_4" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@drawable/line_gradient_right" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonTwo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button"
+        android:layout_marginTop="@dimen/margin_3"
+        android:background="@drawable/button_negative"
+        android:text="@android:string/ok"
+        android:textColor="@color/accent" />
+</LinearLayout>
