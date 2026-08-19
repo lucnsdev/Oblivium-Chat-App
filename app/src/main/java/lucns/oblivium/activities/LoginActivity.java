@@ -29,7 +29,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.installations.FirebaseInstallations;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -236,7 +235,7 @@ public class LoginActivity extends Activity {
             }
             String registerId = task.getResult();
             new TimeRegister("fcm_registration").setLastUpdate();
-            long now = Instant.now().getEpochSecond();
+            long now = System.currentTimeMillis();
             user.setUsername(username);
             user.setLoginTimestamp(now);
             user.setRegisterId(registerId);

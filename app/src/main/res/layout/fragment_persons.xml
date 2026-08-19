@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:fontFamily="@font/roboto_thin"
-            android:text="@string/contacts"
+            android:text="@string/persons"
             android:textColor="@color/white"
             android:textSize="36sp" />
 

@@ -19,7 +19,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -198,7 +197,7 @@ public class InviteActivity extends Activity {
     }
 
     private void sendInvitations(String username) {
-        long now = Instant.now().getEpochSecond();
+        long now = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
         map.put(username + "/invitations/" + user.getUsername() + "/timestamp", now);
         map.put(username + "/invitations/" + user.getUsername() + "/sent", false);

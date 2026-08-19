@@ -43,6 +43,10 @@ public class Annotator {
         new File(getPath()).delete();
     }
 
+    public void setFile(File file) {
+        setFullPath(file.getPath());
+    }
+
     public void setFullPath(String path) {
         String parent = path.substring(0, path.lastIndexOf("/"));
         name = path.substring(path.lastIndexOf("/") + 1);

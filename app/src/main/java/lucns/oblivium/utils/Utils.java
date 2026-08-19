@@ -8,7 +8,6 @@ import android.os.CombinedVibration;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
 
-import java.time.Instant;
 import java.util.Locale;
 
 import lucns.oblivium.R;
@@ -48,7 +47,7 @@ public class Utils {
     }
 
     public static String retrieveTime(long time) {
-        time = Instant.now().getEpochSecond() - time;
+        time = System.currentTimeMillis() - time;
         Context c = App.getContext();
         if (time < 60) {
             return String.format(Locale.getDefault(), c.getString(R.string.format_few_ago), c.getString(R.string.seconds));

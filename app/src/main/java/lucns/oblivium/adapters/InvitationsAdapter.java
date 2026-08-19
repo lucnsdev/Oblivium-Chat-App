@@ -20,7 +20,6 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,6 +31,8 @@ import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Invite;
+import lucns.oblivium.data.models.Person;
+import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.services.firebase.FirebaseMessagingSender;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
@@ -253,8 +254,8 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
         Map<String, Object> map = new HashMap<>();
         map.put(username + "/invitations/" + user.getUsername(), null);
         map.put(user.getUsername() + "/invitations/" + username, null);
-        map.put(username + "/contacts", user.getUsername());
-        map.put(user.getUsername() + "/contacts", username);
+        map.put(username + "/persons", user.getUsername());
+        map.put(user.getUsername() + "/persons", username);
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName).child(Constants.USERS);
         databaseReference.updateChildren(map)
@@ -292,11 +293,14 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String id = dataSnapshot.getValue(String.class);
+                Person person = new Person(username, id, System.currentTimeMillis());
+                PersonsManager.getInstance(getContext()).addPerson(person);
+
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put(Constants.ACTION, Constants.ACTION_INVITE_ACCEPTED);
                     jsonObject.put(Constants.USERNAME, user.getUsername());
-                    jsonObject.put(Constants.TIMESTAMP, String.valueOf(Instant.now().getEpochSecond()));
+                    jsonObject.put(Constants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                     jsonObject.put(Constants.ID, id);
                 } catch (JSONException e) {
                     e.printStackTrace();

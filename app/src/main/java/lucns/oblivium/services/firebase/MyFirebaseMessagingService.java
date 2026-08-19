@@ -20,7 +20,9 @@ import java.util.Map;
 import lucns.oblivium.R;
 import lucns.oblivium.activities.MainActivity;
 import lucns.oblivium.data.User;
+import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.NotificationProvider;
+import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Annotator;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.TimeRegister;
@@ -42,13 +44,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 case Constants.ACTION_MESSAGE:
                     break;
                 case Constants.ACTION_INVITE_ACCEPTED:
-                    JSONObject jsonObject = new JSONObject();
-                    try {
-                        jsonObject.put("fcm_register_id", map.get(Constants.ID));
-                        new Annotator("contacts/" + username, "data.json").setContent(jsonObject.toString(4));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    Person person = new Person(map.get("username"), map.get("fcm_register_id"), Long.valueOf(map.get("timestamp")));
+                    PersonsManager.getInstance(this).addPerson(person);
                     notification.showAlert(getString(R.string.invitation_accepted), "@" + username + " " +  getString(R.string.invitation_accepted), null, null);
                     break;
                 case Constants.ACTION_INVITE_RECEIVED:

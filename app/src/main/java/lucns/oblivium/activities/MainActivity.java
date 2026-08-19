@@ -1,9 +1,6 @@
 package lucns.oblivium.activities;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
@@ -14,14 +11,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.installations.FirebaseInstallations;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 import lucns.oblivium.R;
-import lucns.oblivium.activities.fragments.FragmentContacts;
 import lucns.oblivium.activities.fragments.FragmentConversation;
+import lucns.oblivium.activities.fragments.FragmentPersons;
 import lucns.oblivium.data.User;
+import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
 import lucns.oblivium.utils.TimeRegister;
@@ -41,10 +38,23 @@ public class MainActivity extends Activity {
 
         user = User.getInstance();
 
-        fragmentConversation = new FragmentConversation(this);
+        PersonsManager personsManager = PersonsManager.getInstance(this);
+        fragmentConversation = new FragmentConversation(this, personsManager);
+        FragmentPersons fragmentPersons = new FragmentPersons(this, personsManager);
+        personsManager.setCallback(new PersonsManager.Callback() {
+            @Override
+            public void onPersonsAvailable() {
+                fragmentPersons.update();
+            }
+
+            @Override
+            public void onConversationAvailable() {
+                fragmentConversation.update();
+            }
+        });
         SliderView sliderView = findViewById(R.id.sliderView);
         sliderView.disableScroll(true);
-        sliderView.addFragment(new FragmentContacts(this));
+        sliderView.addFragment(fragmentPersons);
         sliderView.addFragment(fragmentConversation);
     }
 
@@ -76,7 +86,7 @@ public class MainActivity extends Activity {
 
     private void sendUserDataToServer() {
         Map<String, Object> map = new HashMap<>();
-        map.put("access_timestamp", Instant.now().getEpochSecond());
+        map.put("access_timestamp", System.currentTimeMillis());
         if (user.isPendingShipment()) map.put("fcm_register_id", user.getRegisterId());
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
