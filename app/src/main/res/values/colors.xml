@@ -28,7 +28,6 @@
 
     <color name="dialog">#64242424</color>
     <color name="dialog_border">#64D95A1A</color>
-    <color name="toolbar_line">#44FFFFFF</color>
     <color name="item_ripple">#87FFFFFF</color>
     <color name="item_background">#18FFFFFF</color>
     <color name="item_border">#76FFFFFF</color>

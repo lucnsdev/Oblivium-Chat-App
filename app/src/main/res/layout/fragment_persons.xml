@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="@dimen/margin_3"
+        android:background="@drawable/item_background_end"
         android:paddingTop="64dp"
         android:paddingBottom="@dimen/margin_3">
 
@@ -70,12 +71,6 @@
                 android:src="@drawable/icon_arrow_more" />
         </RelativeLayout>
     </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_below="@+id/toolbar"
-        android:background="@color/toolbar_line" />
 
     <TextView
         android:id="@+id/textPersons"

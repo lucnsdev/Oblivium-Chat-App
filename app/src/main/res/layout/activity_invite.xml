@@ -15,7 +15,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/toolbar"
+        android:background="@drawable/item_background_end"
         android:paddingHorizontal="@dimen/margin_3"
         android:paddingTop="64dp"
         android:paddingBottom="@dimen/margin_3">
