@@ -166,7 +166,6 @@ public class LoginActivity extends Activity {
             case 0:
                 username = editText.getText().toString();
                 if (username.isEmpty()) return;
-                username = username.substring(1);
                 getRemotePassword();
                 break;
             case 1:
