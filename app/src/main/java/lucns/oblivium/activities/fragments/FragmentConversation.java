@@ -1,9 +1,11 @@
 package lucns.oblivium.activities.fragments;
 
 import android.app.Activity;
+import android.view.View;
 import android.widget.TextView;
 
 import lucns.oblivium.R;
+import lucns.oblivium.activities.MainActivity;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.views.FragmentView;
@@ -11,7 +13,7 @@ import lucns.oblivium.views.FragmentView;
 public class FragmentConversation extends FragmentView {
 
     private PersonsManager personsManager;
-    private TextView textPerson;
+    private TextView textUsername;
     private Person person;
 
     public FragmentConversation(Activity activity, PersonsManager personsManager) {
@@ -22,12 +24,22 @@ public class FragmentConversation extends FragmentView {
     @Override
     public void onCreate() {
         setContentView(R.layout.fragment_conversation);
-        textPerson = findViewById(R.id.textPerson);
+        textUsername = findViewById(R.id.textUsername);
+        View.OnClickListener onClickListener = new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (v.getId() == R.id.buttonBack) {
+                    ((MainActivity) getActivity()).goToPersons();
+                }
+            }
+        };
+        findViewById(R.id.buttonBack).setOnClickListener(onClickListener);
     }
 
     public void setPerson(Person person) {
         this.person = person;
-        textPerson.setText(person.username);
+        if (person.username.equals(getString(R.string.app_name).toLowerCase())) findViewById(R.id.iconVerified).setVisibility(VISIBLE);
+        textUsername.setText("@" + person.username);
     }
 
     public void update() {

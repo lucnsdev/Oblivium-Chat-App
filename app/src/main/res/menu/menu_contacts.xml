@@ -19,5 +19,5 @@
         android:id="@+id/menu_logout"
         android:orderInCategory="3"
         android:showAsAction="never"
-        android:title="@string/logout" />
+        android:title="@string/sign_out" />
 </menu>

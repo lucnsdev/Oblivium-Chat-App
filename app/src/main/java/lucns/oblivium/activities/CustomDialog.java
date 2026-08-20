@@ -75,6 +75,10 @@ public class CustomDialog {
         d.show();
     }
 
+    public void showDialogConfirmation(int title, int description, View.OnClickListener onClickListener) {
+        showDialogConfirmation(activity.getString(title), activity.getString(description), activity.getString(R.string.fowrard_continue), activity.getString(R.string.back), onClickListener);
+    }
+
     public void showDialogConfirmation(int title, int description, int textButtonPositive, int textButtonNegative, View.OnClickListener onClickListener) {
         showDialogConfirmation(activity.getString(title), activity.getString(description), activity.getString(textButtonPositive), activity.getString(textButtonNegative), onClickListener);
     }
@@ -135,7 +139,7 @@ public class CustomDialog {
     }
 
     public void showDialogText(String title, String description, String buttonO, String buttonT, String initialText, View.OnClickListener onClickListener, TextWatcher textWatcher) {
-        Dialog d = generateDialog(R.layout.dialog_text, false);
+        Dialog d = generateDialog(R.layout.dialog_username, false);
         TextView textTitle = d.findViewById(R.id.textTitle);
         TextView textDescription = d.findViewById(R.id.textDescription);
         textTitle.setText(title);

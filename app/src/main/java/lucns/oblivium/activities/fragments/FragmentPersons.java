@@ -2,14 +2,18 @@ package lucns.oblivium.activities.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,17 +22,22 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.activities.InviteActivity;
 import lucns.oblivium.activities.LogoutActivity;
+import lucns.oblivium.activities.MainActivity;
+import lucns.oblivium.adapters.PersonsAdapter;
 import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
+import lucns.oblivium.utils.TimeRegister;
 import lucns.oblivium.utils.Utils;
 import lucns.oblivium.views.FragmentView;
 import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
@@ -38,6 +47,11 @@ public class FragmentPersons extends FragmentView {
     private PersonsManager personsManager;
     private PopupMenu popupMenu;
     private CustomDialog dialog;
+    private String appName;
+    private RelativeLayout buttonInvite;
+    private ListView listView;
+    private TextView textTime;
+    private PersonsAdapter personsAdapter;
 
     public FragmentPersons(Activity activity, PersonsManager personsManager) {
         super(activity);
@@ -48,11 +62,25 @@ public class FragmentPersons extends FragmentView {
     public void onCreate() {
         setContentView(R.layout.fragment_persons);
 
+        appName = getActivity().getString(R.string.app_name).toLowerCase();
         User user = User.getInstance();
         dialog = new CustomDialog(getActivity());
         HorizontalIndeterminateThreeBalls threeBalls = findViewById(R.id.threeBalls);
 
-        RelativeLayout buttonInvite = findViewById(R.id.buttonInvite);
+        personsAdapter = new PersonsAdapter(getActivity());
+        buttonInvite = findViewById(R.id.buttonInvite);
+        textTime = findViewById(R.id.textTime);
+        listView = findViewById(R.id.listView);
+        listView.setAdapter(personsAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Person person = personsAdapter.getItem(position);
+                ((MainActivity) getActivity()).goToConversation(person);
+            }
+        });
+        personsManager.requestPersons();
+
         Button buttonRetry = findViewById(R.id.buttonRetry);
         View.OnClickListener onClickListener = new OnClickListener() {
             @Override
@@ -70,9 +98,11 @@ public class FragmentPersons extends FragmentView {
         };
         buttonInvite.setOnClickListener(onClickListener);
         buttonRetry.setOnClickListener(onClickListener);
-        findViewById(R.id.buttonBack).setOnClickListener(onClickListener);
+        //findViewById(R.id.buttonBack).setOnClickListener(onClickListener);
         ImageButton buttonMenu = findViewById(R.id.buttonMenu);
         buttonMenu.setOnClickListener(onClickListener);
+        ((TextView) findViewById(R.id.textUsername)).setText("@" + user.getUsername());
+        if (user.getUsername().equals(appName)) findViewById(R.id.iconVerified).setVisibility(VISIBLE);
 
         ContextThemeWrapper darkWrapper = new ContextThemeWrapper(getActivity(), R.style.PopUpMenuTheme);
         popupMenu = new PopupMenu(darkWrapper, buttonMenu);
@@ -83,8 +113,27 @@ public class FragmentPersons extends FragmentView {
                 if (itemId == R.id.menu_about) {
                     dialog.showDialogAbout();
                 } else if (itemId == R.id.menu_logout) {
-                    startActivity(new Intent(getActivity(), LogoutActivity.class));
-                    finish();
+                    dialog.showDialogConfirmation(R.string.confirmation, R.string.sign_out, new OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+                            if (v.getId() == R.id.buttonOne) {
+                                new TimeRegister("fcm_registration").delete();
+                                listView.setVisibility(INVISIBLE);
+                                textTime.setText(R.string.no_contact);
+                                buttonInvite.setVisibility(INVISIBLE);
+                                personsAdapter.removeAll();
+                                personsManager.deleteAll();
+                                if (!Utils.hasInternetConnection()) {
+                                    user.logout();
+                                    finish();
+                                    return;
+                                }
+                                startActivity(new Intent(getActivity(), LogoutActivity.class));
+                                finish();
+                            }
+                        }
+                    });
                 } else if (itemId == R.id.menu_invitations) {
                     startActivity(new Intent(getActivity(), InviteActivity.class));
                 }
@@ -105,7 +154,7 @@ public class FragmentPersons extends FragmentView {
                         List<Person> list = new ArrayList<>();
                         for (DataSnapshot snapshot : iterable) {
                             Map<String, Object> map = (Map<String, Object>) snapshot.getValue();
-                            list.add(new Person((String) map.get("username"), (String) map.get("fcm_register_id"), (Long) map.get("timestamp")));
+                            list.add(new Person(snapshot.getKey(), null, (Long) map.get("timestamp")));
                         }
                         personsManager.comparePersons(list.toArray(new Person[0]));
                     } else {
@@ -125,7 +174,16 @@ public class FragmentPersons extends FragmentView {
 
     public void update() {
         Person[] persons = personsManager.getPersons();
-
+        if (persons == null || persons.length == 0) {
+            textTime.setText(R.string.no_contact);
+            listView.setVisibility(INVISIBLE);
+            buttonInvite.setVisibility(VISIBLE);
+            return;
+        }
+        textTime.setText(String.format(Locale.getDefault(), getString(R.string.persons_count), persons.length, persons.length == 1 ? "" : "s"));
+        listView.setVisibility(VISIBLE);
+        buttonInvite.setVisibility(INVISIBLE);
+        personsAdapter.setAll(Arrays.asList(persons));
     }
 
     @Override

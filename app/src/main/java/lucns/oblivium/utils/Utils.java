@@ -4,7 +4,9 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.CombinedVibration;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
 
@@ -33,8 +35,40 @@ public class Utils {
     }
 
     public static void vibrate() {
+        vibrate(50);
+    }
+
+    public static void vibrate(long duration) {
         vibrator.cancel();
-        vibrator.vibrate(CombinedVibration.createParallel(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)));
+        vibrator.vibrate(CombinedVibration.createParallel(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE)));
+    }
+
+    public static void singlePulse() {
+        vibrator.cancel();
+        long[] timings = new long[]{0, 25};
+        int[] amplitudes = new int[]{0, 128};
+        VibrationEffect effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            vibrator.vibrate(CombinedVibration.createParallel(effect), VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH));
+            return;
+        }
+        VibrationAttributes.Builder builder = new VibrationAttributes.Builder();
+        builder.setUsage(VibrationAttributes.USAGE_TOUCH);
+        vibrator.vibrate(CombinedVibration.createParallel(effect), builder.build());
+    }
+
+    public static void pulsate() {
+        vibrator.cancel();
+        long[] timings = new long[]{0, 25, 75, 10};
+        int[] amplitudes = new int[]{0, 128, 0, 255};
+        VibrationEffect effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            vibrator.vibrate(CombinedVibration.createParallel(effect), VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH));
+            return;
+        }
+        VibrationAttributes.Builder builder = new VibrationAttributes.Builder();
+        builder.setUsage(VibrationAttributes.USAGE_TOUCH);
+        vibrator.vibrate(CombinedVibration.createParallel(effect), builder.build());
     }
 
     public static boolean hasInternetConnection() {

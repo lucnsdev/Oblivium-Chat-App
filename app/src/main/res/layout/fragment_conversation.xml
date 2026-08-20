@@ -1,39 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
-        android:paddingHorizontal="@dimen/margin_3">
+        android:orientation="horizontal"
+        android:paddingTop="64dp"
+        android:paddingBottom="@dimen/margin_3">
 
         <ImageButton
             android:id="@+id/buttonBack"
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:layout_gravity="center"
             android:background="@drawable/button_rounded"
             android:src="@drawable/icon_arrow_back" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/buttonMenu"
-            android:layout_toEndOf="@+id/buttonBack"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/margin_2">
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/margin"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textPerson"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_bold"
-                android:text="@string/person"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textUsername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto_light"
+                    android:text="@string/app_name"
+                    android:textColor="@color/white"
+                    android:textSize="36sp" />
+
+                <ImageView
+                    android:id="@+id/iconVerified"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="@dimen/margin"
+                    android:src="@drawable/icon_verified"
+                    android:visibility="invisible" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/textTime"
@@ -47,8 +64,14 @@
             android:id="@+id/buttonMenu"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:layout_alignParentEnd="true"
+            android:layout_gravity="center"
             android:background="@drawable/button_rounded"
             android:src="@drawable/icon_arrow_more" />
-    </RelativeLayout>
-</LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_below="@id/toolbar"
+        android:background="@color/toolbar_line" />
+</RelativeLayout>

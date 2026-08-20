@@ -29,6 +29,7 @@ import lucns.oblivium.adapters.InvitationsAdapter;
 import lucns.oblivium.animations.ViewChangerController;
 import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Invite;
+import lucns.oblivium.services.firebase.FirebaseNotificationSender;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
 import lucns.oblivium.utils.Utils;
@@ -44,6 +45,7 @@ public class InviteActivity extends Activity {
     private User user;
     private InvitationsAdapter listAdapter;
     private String appName;
+    private FirebaseNotificationSender notificationSender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +55,22 @@ public class InviteActivity extends Activity {
 
         appName = getString(R.string.app_name).toLowerCase();
         user = User.getInstance();
+        notificationSender = new FirebaseNotificationSender(this);
+
         rootProgress = findViewById(R.id.rootProgress);
         rootContent = findViewById(R.id.rootContent);
         buttonRetry = findViewById(R.id.buttonRetry);
         listVew = findViewById(R.id.listView);
         textStatus = findViewById(R.id.textStatus);
         viewChangerController = new ViewChangerController(rootContent, rootProgress);
-        listAdapter = new InvitationsAdapter(this);
+        listAdapter = new InvitationsAdapter(this, new InvitationsAdapter.OnEmptyListener() {
+            @Override
+            public void onEmpty() {
+                textStatus.setText(R.string.no_invitations);
+                textStatus.setVisibility(View.VISIBLE);
+                listVew.setVisibility(View.INVISIBLE);
+            }
+        });
         listVew.setAdapter(listAdapter);
 
         dialog = new CustomDialog(this);
@@ -90,9 +101,8 @@ public class InviteActivity extends Activity {
     }
 
     private void loadInvitations() {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
-        databaseReference = databaseReference.child(Constants.USERS).child(user.getUsername()).child("invitations");
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName).child(Constants.USERS);
+        databaseReference.child(user.getUsername()).child("invitations").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -137,8 +147,9 @@ public class InviteActivity extends Activity {
                     dialog.dismiss();
                     return;
                 }
-                if (username[0] == null || username[0].isEmpty() || username[0].length() < 5 || username[0].equals(user.getUsername())) {
+                if (!isUsernameInviteValid(username[0])) {
                     Notify.showToast(R.string.error_invalid_username);
+                    Utils.pulsate();
                     return;
                 }
                 dialog.dismiss();
@@ -147,6 +158,7 @@ public class InviteActivity extends Activity {
 
                 if (!Utils.hasInternetConnection()) {
                     Notify.showToast(R.string.error_no_connection);
+                    Utils.pulsate();
                     return;
                 }
                 inviteFriend(username[0]);
@@ -169,14 +181,23 @@ public class InviteActivity extends Activity {
         });
     }
 
+    private boolean isUsernameInviteValid(String username) {
+        if (username == null || username.isEmpty() || username.length() < 5 || username.equals(user.getUsername())) return false;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            if (listAdapter.getItem(i).username.equals(username)) return false;
+        }
+        return true;
+    }
+
     private void inviteFriend(String username) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName).child(Constants.USERS).child(username);
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     sendInvitations(username);
                 } else {
+                    Utils.singlePulse();
                     dialog.dismiss();
                     dialog.showDialogConsent(R.string.error_user_not_exists, new View.OnClickListener() {
                         @Override
@@ -209,13 +230,18 @@ public class InviteActivity extends Activity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        Utils.singlePulse();
                         listAdapter.add(new Invite(username, now, true));
+                        notificationSender.sendNotification(username, Constants.ACTION_INVITE_RECEIVED);
                         dialog.dismiss();
+                        textStatus.setVisibility(View.INVISIBLE);
+                        listVew.setVisibility(View.VISIBLE);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(Exception e) {
+                        Utils.pulsate();
                         dialog.dismiss();
                         dialog.showDialogConnectionFailure();
                     }

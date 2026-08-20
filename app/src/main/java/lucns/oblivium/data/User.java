@@ -90,6 +90,10 @@ public class User {
     }
 
     public void logout() {
+
         new Annotator("user", "user.json").delete();
+        registerId = null;
+        isPendingShipment = false;
+
     }
 }

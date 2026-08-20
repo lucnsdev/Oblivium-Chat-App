@@ -11,14 +11,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,29 +27,34 @@ import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Invite;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.PersonsManager;
-import lucns.oblivium.services.firebase.FirebaseMessagingSender;
+import lucns.oblivium.services.firebase.FirebaseNotificationSender;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
 import lucns.oblivium.utils.Utils;
 
 public class InvitationsAdapter extends ArrayAdapter<Invite> {
 
-    private static final int TYPE_RECEIVED = 0;
-    private static final int TYPE_SENT = 1;
+    public interface OnEmptyListener {
+        void onEmpty();
+    }
 
     private final LayoutInflater inflater;
     private final List<Invite> list;
     private CustomDialog dialog;
     private String appName;
     private User user;
+    private FirebaseNotificationSender notificationSender;
+    private OnEmptyListener callback;
 
-    public InvitationsAdapter(Context context) {
+    public InvitationsAdapter(Context context, OnEmptyListener listener) {
         super(context, 0);
+        this.callback = listener;
         this.inflater = LayoutInflater.from(context);
         this.list = new ArrayList<>();
         this.dialog = new CustomDialog((Activity) context);
         this.appName = context.getString(R.string.app_name).toLowerCase();
         this.user = User.getInstance();
+        this.notificationSender = new FirebaseNotificationSender(context);
     }
 
     @Override
@@ -71,12 +70,6 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
     @Override
     public int getViewTypeCount() {
         return 2;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        Invite invite = getItem(position);
-        return invite.sent ? TYPE_SENT : TYPE_RECEIVED;
     }
 
     private void reorder() {
@@ -106,6 +99,7 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
         list.remove(invite);
         reorder();
         notifyDataSetChanged();
+        if (list.isEmpty()) callback.onEmpty();
     }
 
     public void remove(String username) {
@@ -115,28 +109,11 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
                 break;
             }
         }
-
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Invite invite = getItem(position);
-        int viewType = getItemViewType(position);
-
-        if (convertView == null) {
-            if (viewType == TYPE_SENT) {
-                convertView = inflater.inflate(R.layout.item_invite_sent, parent, false);
-            } else {
-                convertView = inflater.inflate(R.layout.item_invite_received, parent, false);
-            }
-        }
-
-        if (invite.username.equals(appName)) convertView.findViewById(R.id.iconVerified).setVisibility(View.VISIBLE);
-        TextView textUsername = convertView.findViewById(R.id.textUsername);
-        TextView textDatetime = convertView.findViewById(R.id.textDatetime);
-
-        textUsername.setText(invite.username);
-        textDatetime.setText(Utils.retrieveTime(invite.timestamp));
 
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
@@ -202,16 +179,24 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
                 }
             }
         };
-
-        if (viewType == TYPE_SENT) {
+        if (invite.sent) {
+            convertView = inflater.inflate(R.layout.item_invite_sent, parent, false);
             Button buttonCancel = convertView.findViewById(R.id.buttonCancel);
             buttonCancel.setOnClickListener(onClickListener);
         } else {
+            convertView = inflater.inflate(R.layout.item_invite_received, parent, false);
             Button buttonAccept = convertView.findViewById(R.id.buttonAccept);
             Button buttonReject = convertView.findViewById(R.id.buttonReject);
             buttonAccept.setOnClickListener(onClickListener);
             buttonReject.setOnClickListener(onClickListener);
         }
+
+        if (invite.username.equals(appName)) convertView.findViewById(R.id.iconVerified).setVisibility(View.VISIBLE);
+        TextView textUsername = convertView.findViewById(R.id.textUsername);
+        TextView textDatetime = convertView.findViewById(R.id.textDatetime);
+
+        textUsername.setText(invite.username);
+        textDatetime.setText(Utils.retrieveTime(invite.timestamp));
 
         if (getCount() == 1) {
             convertView.setBackgroundResource(R.drawable.item_rounded_background);
@@ -251,20 +236,25 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
 
     private void inviteAccept(String username) {
         dialog.showDialogWait(R.string.invite_accepting);
+        long now = System.currentTimeMillis();
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("timestamp", now);
         Map<String, Object> map = new HashMap<>();
         map.put(username + "/invitations/" + user.getUsername(), null);
         map.put(user.getUsername() + "/invitations/" + username, null);
-        map.put(username + "/persons", user.getUsername());
-        map.put(user.getUsername() + "/persons", username);
+        map.put(username + "/persons/" + user.getUsername(), userMap);
+        map.put(user.getUsername() + "/persons/" + username, userMap);
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName).child(Constants.USERS);
         databaseReference.updateChildren(map)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        Person person = new Person(username, null, System.currentTimeMillis());
+                        PersonsManager.getInstance(getContext()).addPerson(person);
                         remove(username);
                         dialog.dismiss();
-                        sendNotification(username);
+                        notificationSender.sendNotification(username, Constants.ACTION_INVITE_ACCEPTED);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -284,36 +274,5 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
     private void inviteCancel(String username) {
         dialog.showDialogWait(R.string.invite_canceling);
         excludeInvite(username);
-    }
-
-    private void sendNotification(String username) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName);
-        databaseReference = databaseReference.child(Constants.USERS).child(username).child("fcm_register_id");
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String id = dataSnapshot.getValue(String.class);
-                Person person = new Person(username, id, System.currentTimeMillis());
-                PersonsManager.getInstance(getContext()).addPerson(person);
-
-                JSONObject jsonObject = new JSONObject();
-                try {
-                    jsonObject.put(Constants.ACTION, Constants.ACTION_INVITE_ACCEPTED);
-                    jsonObject.put(Constants.USERNAME, user.getUsername());
-                    jsonObject.put(Constants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    jsonObject.put(Constants.ID, id);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                FirebaseMessagingSender sender = new FirebaseMessagingSender(getContext(), null);
-                sender.setDestineRegisterId(id);
-                sender.put(jsonObject);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Annotator {
 
-    private final String basePath;
+    private String basePath;
     private String folderName, name;
 
     public Annotator() {
@@ -49,8 +49,9 @@ public class Annotator {
 
     public void setFullPath(String path) {
         String parent = path.substring(0, path.lastIndexOf("/"));
-        name = path.substring(path.lastIndexOf("/") + 1);
+        basePath = parent.substring(0, parent.lastIndexOf("/"));
         folderName = parent.substring(parent.lastIndexOf("/") + 1);
+        name = path.substring(path.lastIndexOf("/") + 1);
     }
 
     public Annotator[] listAll() {
@@ -68,10 +69,10 @@ public class Annotator {
         return list.toArray(new Annotator[0]);
     }
 
-    public String  getPath() {
+    public String getPath() {
+        if (name == null) name = "data.txt";
         String path = basePath;
         if (folderName != null) path += "/" + folderName;
-        if (name == null) name = "data.txt";
         path += "/" + name;
         return path;
     }

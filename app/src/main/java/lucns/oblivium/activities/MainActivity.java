@@ -3,6 +3,8 @@ package lucns.oblivium.activities;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,6 +20,7 @@ import lucns.oblivium.R;
 import lucns.oblivium.activities.fragments.FragmentConversation;
 import lucns.oblivium.activities.fragments.FragmentPersons;
 import lucns.oblivium.data.User;
+import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
@@ -29,6 +32,7 @@ public class MainActivity extends Activity {
 
     private User user;
     private FragmentConversation fragmentConversation;
+    private SliderView sliderView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +56,36 @@ public class MainActivity extends Activity {
                 fragmentConversation.update();
             }
         });
-        SliderView sliderView = findViewById(R.id.sliderView);
+        sliderView = findViewById(R.id.sliderView);
         sliderView.disableScroll(true);
         sliderView.addFragment(fragmentPersons);
         sliderView.addFragment(fragmentConversation);
+
+        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(callback);
+    }
+
+    private final OnBackInvokedCallback callback = new OnBackInvokedCallback() {
+
+        @Override
+        public void onBackInvoked() {
+            if (sliderView.getCurrentIndex() == 0) finish();
+            else goToPersons();
+        }
+    };
+
+    public void goToPersons() {
+        sliderView.goToIndex(0);
+    }
+
+    public void goToConversation(Person person) {
+        fragmentConversation.setPerson(person);
+        sliderView.goToIndex(1);
     }
 
     @Override

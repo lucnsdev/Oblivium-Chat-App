@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
@@ -62,6 +64,7 @@ public class PersonsManager {
             return;
         }
         Person[] persons2 = new Person[persons.length + 1];
+        System.arraycopy(persons, 0, persons2, 0, persons.length);
         persons2[persons.length] = person;
         persons = persons2;
         savePersonToStorage(person);
@@ -72,10 +75,24 @@ public class PersonsManager {
         if (persons == null) {
             persons = remotePersons;
             for (Person p : persons) savePersonToStorage(p);
-            callback.onPersonsAvailable();
-            return;
+        } else {
+            Map<String, Person> map = new HashMap<>();
+            for (Person p : persons) map.put(p.username, p);
+            for (Person p : remotePersons) {
+                if (map.containsKey(p.username)) {
+                    Person person = map.get(p.username);
+                    if (person.registerId == null || (!person.registerId.equals(p.registerId) && p.registerId != null)) {
+                        person.registerId = p.registerId;
+                        savePersonToStorage(person);
+                    }
+                    continue;
+                }
+                map.put(p.username, p);
+                savePersonToStorage(p);
+            }
+            persons = map.values().toArray(new Person[0]);
         }
-        // fazer comparacao aqui
+        callback.onPersonsAvailable();
     }
 
     public void requestConversation(Person person) {
@@ -114,7 +131,7 @@ public class PersonsManager {
             public void run() {
                 persons = new Person[folders.length];
                 for (int i = 0; i < folders.length; i++) {
-                    persons[i] = new Person(folders[i].getName());
+                    persons[i] = readPerson(folders[i].getName());
                     persons[i].conversation = new Message[]{getLastMessage(folders[i].getName())};
                 }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -125,6 +142,29 @@ public class PersonsManager {
                 });
             }
         }).start();
+    }
+
+    public void deleteAll() {
+        persons = new Person[0];
+        File[] files = new File(personsPath).listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            File[] fs = file.listFiles();
+            for (File f : fs) f.delete();
+            file.delete();
+        }
+    }
+
+    private Person readPerson(String folderName) {
+        Annotator annotator = new Annotator();
+        annotator.setFullPath(personsPath + "/" + folderName + "/data.json");
+        try {
+            JSONObject jsonObject = new JSONObject(annotator.getContent());
+            return new Person(folderName, jsonObject.optString("fcm_register_id"), jsonObject.getLong("timestamp"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private Message jsonToMessage(String json) {
@@ -204,7 +244,7 @@ public class PersonsManager {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", person.username);
-            jsonObject.put("fcm_register_id", person.registerId);
+            if (person.registerId != null) jsonObject.put("fcm_register_id", person.registerId);
             jsonObject.put("timestamp", person.timestamp);
             Annotator annotator = new Annotator();
             annotator.setFullPath(personsPath + "/" + person.username + "/data.json");

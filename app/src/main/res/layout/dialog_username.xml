@@ -25,22 +25,11 @@
         android:textColor="@color/gray"
         android:textSize="16sp" />
 
-    <EditText
-        android:id="@+id/editText"
+    <include
+        layout="@layout/edittext_username"
         android:layout_width="match_parent"
         android:layout_height="@dimen/edit_text"
-        android:layout_marginTop="@dimen/margin_6"
-        android:background="@drawable/edittext_background"
-        android:digits="qwertyuiopasdfghjklzxcvbnm_@012345678"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:maxLength="16"
-        android:maxLines="1"
-        android:paddingStart="@dimen/margin_2"
-        android:paddingEnd="@dimen/margin_2"
-        android:textColor="@drawable/text_state"
-        android:textColorHint="@color/hint"
-        android:textCursorDrawable="@drawable/cursor" />
+        android:layout_marginTop="@dimen/margin_3" />
 
     <Button
         android:id="@+id/buttonOne"

@@ -30,12 +30,17 @@ import lucns.oblivium.utils.TimeRegister;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private NotificationProvider notification;
+    private User user;
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         //Log.d("Lucas", "onMessageReceived");
         Map<String, String> map = remoteMessage.getData();
+        if (!user.hasCredentials()) {
+            Log.i("FirebaseMessagingService", "Message received with User unbounded!");
+            return;
+        }
         if (!map.isEmpty()) {
             String username = map.get(Constants.USERNAME);
             String action = map.get(Constants.ACTION);
@@ -60,6 +65,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onCreate();
         notification = new NotificationProvider(this, null);
         notification.setActivityClass(MainActivity.class);
+        user = User.getInstance();
     }
 
     @Override
@@ -73,7 +79,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         user.save();
 
         if (hasLogin) {
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
             databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {

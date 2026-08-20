@@ -29,30 +29,39 @@
                 android:textColor="@color/white"
                 android:textSize="36sp" />
 
-            <EditText
-                android:id="@+id/editText"
+            <RelativeLayout
+                android:id="@+id/rootEditTextUsername"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/edit_text"
+                android:layout_height="wrap_content"
                 android:layout_below="@+id/textTitle"
-                android:layout_marginStart="@dimen/margin"
-                android:layout_marginTop="@dimen/margin_6"
-                android:background="@drawable/edittext_background"
-                android:digits="qwertyuiopasdfghjklzxcvbnm_@012345678"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:maxLength="16"
-                android:maxLines="1"
-                android:paddingStart="@dimen/margin_2"
-                android:paddingEnd="@dimen/margin_2"
-                android:textColor="@drawable/text_state"
-                android:textColorHint="@color/hint"
-                android:textCursorDrawable="@drawable/cursor" />
+                android:layout_marginTop="@dimen/margin_8">
+
+                <include layout="@layout/edittext_username" />
+
+                <EditText
+                    android:id="@+id/editTextPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/edit_text"
+                    android:background="@drawable/edittext_background"
+                    android:digits="qwertyuiopasdfghjklzxcvbnm_@012345678"
+                    android:hint="@string/password"
+                    android:imeOptions="actionNext"
+                    android:inputType="textPassword"
+                    android:maxLength="16"
+                    android:maxLines="1"
+                    android:paddingStart="@dimen/margin_2"
+                    android:paddingEnd="@dimen/margin_2"
+                    android:textColor="@drawable/text_state"
+                    android:textColorHint="@color/hint"
+                    android:textCursorDrawable="@drawable/cursor"
+                    android:visibility="invisible" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/textRecoverPassword"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/editText"
+                android:layout_below="@+id/rootEditTextUsername"
                 android:layout_marginStart="@dimen/margin"
                 android:layout_marginTop="@dimen/margin_3"
                 android:text="@string/recover_password"
@@ -66,11 +75,24 @@
                 android:layout_below="@+id/textRecoverPassword"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/margin_4"
-                android:background="@drawable/button_translucent"
+                android:background="@drawable/button_positive"
                 android:enabled="false"
-                android:textSize="18sp"
                 android:text="@string/next"
-                android:textColor="@drawable/text_state" />
+                android:textColor="@drawable/text_state"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/buttonBack"
+                android:layout_width="220dp"
+                android:layout_height="@dimen/button"
+                android:layout_below="@+id/button"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/margin_4"
+                android:background="@drawable/button_negative"
+                android:text="@string/back"
+                android:textColor="@color/button_border"
+                android:textSize="18sp"
+                android:visibility="invisible" />
         </RelativeLayout>
 
         <include layout="@layout/loading" />

@@ -19,6 +19,10 @@ public class TimeRegister {
         this.name = name + ".txt";
     }
 
+    public void delete() {
+        new Annotator("time_registers", name).delete();
+    }
+
     public void setLastUpdate() {
         long time = Calendar.getInstance().getTimeInMillis();
         new Annotator("time_registers", name).setContent(String.valueOf(time));

@@ -12,13 +12,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -38,19 +38,23 @@ import lucns.oblivium.animations.ViewChangerController;
 import lucns.oblivium.data.User;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.TimeRegister;
+import lucns.oblivium.utils.Utils;
 
 public class LoginActivity extends Activity {
 
     private ViewChangerController viewChangerController;
-    private Button button;
+    private Button button, buttonBack;
     private RelativeLayout rootForm, rootProgress;
+    private LinearLayout rootEditText;
     private CustomDialog dialog;
     private TextView textTitle;
-    private EditText editText;
+    private EditText editText, editTextPassword;
     private DatabaseReference database;
     private String username, password, remotePassword;
     private User user;
     private TextView textRecoverPassword;
+    private String deviceId;
+    private int step;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,7 @@ public class LoginActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_login);
 
+        deviceId = Settings.System.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         user = User.getInstance();
         dialog = new CustomDialog(this);
         try {
@@ -66,7 +71,7 @@ public class LoginActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        database = FirebaseDatabase.getInstance().getReference();
+        database = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
 
         rootForm = findViewById(R.id.rootForm);
         rootProgress = findViewById(R.id.rootProgress);
@@ -75,23 +80,23 @@ public class LoginActivity extends Activity {
         textTitle = findViewById(R.id.textTitle);
         textTitle.setText(R.string.enter_username);
         textRecoverPassword = findViewById(R.id.textRecoverPassword);
+        buttonBack = findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                backToUserInput();
+            }
+        });
         button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                editText.setEnabled(false);
+                closeKeyboard();
                 button.setEnabled(false);
                 changeViews(true);
             }
         });
-
-        editText = findViewById(R.id.editText);
-        editText.setHint(R.string.username);
-        if (user.getUsername() != null) {
-            editText.setText("@" + user.getUsername());
-            button.setEnabled(true);
-        }
-        editText.addTextChangedListener(new TextWatcher() {
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
             }
@@ -102,30 +107,71 @@ public class LoginActivity extends Activity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                button.setEnabled(editText.getText().length() > 4);
+                if (step == 0) {
+                    button.setEnabled(editText.getText().length() > 3);
+                } else {
+                    button.setEnabled(editTextPassword.getText().length() > 3);
+                }
             }
-        });
+        };
+        rootEditText = findViewById(R.id.rootEditText);
+        editText = findViewById(R.id.editText);
+        editTextPassword = findViewById(R.id.editTextPassword);
+        if (user.getUsername() != null) editText.setText(user.getUsername());
+        editText.addTextChangedListener(textWatcher);
+        editTextPassword.addTextChangedListener(textWatcher);
 
         checkDarkList();
     }
 
-    private void changeViews(boolean showB) {
-        viewChangerController.change(showB, new AnimatorListenerAdapter() {
+    private void backToUserInput() {
+        step = 0;
+        closeKeyboard();
+        viewChangerController.change(true, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                checkLogin();
+                username = null;
+                password = null;
+                remotePassword = null;
+                rootEditText.setVisibility(View.VISIBLE);
+                buttonBack.setVisibility(View.INVISIBLE);
+                editTextPassword.setVisibility(View.INVISIBLE);
+                textRecoverPassword.setVisibility(View.INVISIBLE);
+                editTextPassword.getText().clear();
+                textTitle.setText(R.string.enter_username);
+                button.setEnabled(true);
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Utils.singlePulse();
+                        viewChangerController.change(false);
+                        openKeyboard();
+                    }
+                }, 250);
+            }
+        });
+    }
+
+    private void changeViews(boolean showLoading) {
+        viewChangerController.change(showLoading, new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (showLoading) checkLogin();
             }
         });
     }
 
     private void checkLogin() {
-        if (editText.getText().length() > 4) {
-            if (username == null) {
+        switch (step) {
+            case 0:
                 username = editText.getText().toString();
-                if (username.startsWith("@")) username = username.substring(1);
+                if (username.isEmpty()) return;
+                username = username.substring(1);
                 getRemotePassword();
-            } else if (password == null) {
-                password = editText.getText().toString();
+                break;
+            case 1:
+                password = editTextPassword.getText().toString();
+                if (password.isEmpty()) return;
                 if (remotePassword == null) {
                     putUserData();
                     return;
@@ -136,54 +182,48 @@ public class LoginActivity extends Activity {
                         if (password.equals(remotePassword)) {
                             putUserData();
                         } else {
+                            Utils.singlePulse();
                             changeViews(false);
                             dialog.showWrongPasswordDialog(new View.OnClickListener() {
 
                                 @Override
                                 public void onClick(View v) {
                                     dialog.dismiss();
-                                    editText.setEnabled(true);
                                     if (v.getId() == R.id.buttonTwo) {
-                                        textTitle.setText(R.string.enter_username);
-                                        textRecoverPassword.setVisibility(View.INVISIBLE);
-                                        editText.setHint(R.string.username);
-                                        editText.setText("@" + username);
-                                        editText.setInputType(InputType.TYPE_CLASS_TEXT);
-                                        username = null;
-                                        password = null;
-                                        remotePassword = null;
+                                        backToUserInput();
                                     } else {
                                         password = null;
-                                        button.setEnabled(true);
+                                        openKeyboard();
                                     }
-                                    openKeyboard();
                                 }
                             });
                         }
                     }
                 }, 1000);
-            }
+                break;
         }
     }
 
     private void getRemotePassword() {
-        DatabaseReference userRef = database.child(Constants.USERS).child(username);
+        DatabaseReference userRef = database.child(Constants.USERS).child(username).child("password");
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                step = 1;
+                Utils.singlePulse();
                 if (dataSnapshot.exists()) {
-                    remotePassword = dataSnapshot.child("password").getValue(String.class);
-                    Log.d("Lucas", "User exists");
+                    remotePassword = dataSnapshot.getValue(String.class);
+                    button.setText(R.string.sign_in);
+                    textTitle.setText(R.string.enter_password);
                 } else {
-                    Log.d("Lucas", "User not exists");
                     remotePassword = null;
+                    button.setText(R.string.sign_up);
+                    textTitle.setText(R.string.setup_password);
                 }
                 textRecoverPassword.setVisibility(View.VISIBLE);
-                textTitle.setText(R.string.enter_password);
-                editText.setEnabled(true);
-                editText.setHint(R.string.password);
-                editText.getText().clear();
-                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                editTextPassword.setVisibility(View.VISIBLE);
+                rootEditText.setVisibility(View.INVISIBLE);
+                buttonBack.setVisibility(View.VISIBLE);
                 changeViews(false);
                 openKeyboard();
             }
@@ -191,6 +231,7 @@ public class LoginActivity extends Activity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 username = null;
+                Utils.singlePulse();
                 changeViews(false);
                 dialog.showDialogConnectionFailure(new View.OnClickListener() {
                     @Override
@@ -204,12 +245,12 @@ public class LoginActivity extends Activity {
     }
 
     private void checkDarkList() {
-        String deviceId = Settings.System.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         DatabaseReference userRef = database.child("dark_list").child(deviceId);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    Utils.singlePulse();
                     dialog.showBanDialog(new View.OnClickListener() {
 
                         @Override
@@ -230,6 +271,7 @@ public class LoginActivity extends Activity {
     private void putUserData() {
         FirebaseInstallations.getInstance().getId().addOnCompleteListener(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
+                Utils.singlePulse();
                 showDialogBadConnection();
                 return;
             }
@@ -246,11 +288,12 @@ public class LoginActivity extends Activity {
             map.put("login_timestamp", now);
             map.put("access_timestamp", now);
             map.put("fcm_register_id", user.getRegisterId());
+            map.put("device_id", deviceId);
 
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            database.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    Utils.singlePulse();
                     user.removePending();
                     user.save();
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
@@ -259,10 +302,11 @@ public class LoginActivity extends Activity {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
+                    Utils.singlePulse();
                     showDialogBadConnection();
                 }
             });
-            databaseReference.child(Constants.USERS).child(username).updateChildren(map);
+            database.child(Constants.USERS).child(username).updateChildren(map);
         });
     }
 
@@ -270,25 +314,40 @@ public class LoginActivity extends Activity {
         dialog.showDialogConnectionFailure(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
                 password = null;
                 remotePassword = null;
-                editText.getText().clear();
+                editTextPassword.getText().clear();
+                dialog.dismiss();
                 openKeyboard();
             }
         });
+    }
+
+    private void closeKeyboard() {
+        EditText e;
+        if (step == 0) {
+            e = editText;
+        } else {
+            e = editTextPassword;
+        }
+        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(e.getWindowToken(), 0);
     }
 
     private void openKeyboard() {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                editText.setEnabled(true);
-                editText.requestFocus();
-                editText.setSelection(editText.getText().length());
-                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(editText, 0);
+                EditText e;
+                if (step == 0) {
+                    e = editText;
+                } else {
+                    e = editTextPassword;
+                }
+                e.requestFocus();
+                e.setSelection(e.getText().length());
+                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(e, 0);
             }
-        }, 100);
+        }, 250);
     }
 
     @Override

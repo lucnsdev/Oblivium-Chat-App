@@ -11,6 +11,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import lucns.oblivium.R;
 import lucns.oblivium.data.User;
+import lucns.oblivium.utils.Utils;
 
 public class LogoutActivity extends Activity {
 
@@ -26,6 +27,7 @@ public class LogoutActivity extends Activity {
         User user = User.getInstance();
         FirebaseMessaging.getInstance().unregister().addOnCompleteListener(task -> {
             //if (task.isSuccessful()) ;
+            Utils.singlePulse();
             user.logout();
             startActivity(new Intent(this, LoginActivity.class));
             finish();

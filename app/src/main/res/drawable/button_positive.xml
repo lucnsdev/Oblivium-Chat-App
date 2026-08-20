@@ -4,7 +4,7 @@
     <!-- DISABLED STATE -->
     <item android:state_enabled="false">
         <shape android:shape="rectangle">
-            <solid android:color="@color/item_disabled" />
+            <solid android:color="@color/item_background" />
             <corners android:radius="@dimen/margin_4" />
             <stroke android:width="1px" android:color="@color/button_disabled_border" />
         </shape>

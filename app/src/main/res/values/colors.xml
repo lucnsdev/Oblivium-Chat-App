@@ -28,8 +28,10 @@
 
     <color name="dialog">#64242424</color>
     <color name="dialog_border">#64D95A1A</color>
-    <color name="item_disabled">#18FFFFFF</color>
-    <color name="item_list">#18FFFFFF</color>
+    <color name="toolbar_line">#44FFFFFF</color>
+    <color name="item_ripple">#87FFFFFF</color>
+    <color name="item_background">#18FFFFFF</color>
+    <color name="item_border">#76FFFFFF</color>
     <color name="button_gradient_start">#ac4321</color>
     <color name="button_gradient_end">#7FAC4321</color>
     <color name="button_border">#DC5C12</color>

@@ -7,15 +7,6 @@ public class Person {
     public long timestamp;
     public Message[] conversation;
 
-    public Person(String username) {
-        this.username = username;
-    }
-
-    public Person(String username, long timestamp) {
-        this.username = username;
-        this.timestamp = timestamp;
-    }
-
     public Person(String username, String registerId, long timestamp) {
         this.username = username;
         this.registerId = registerId;

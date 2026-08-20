@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
 import java.util.LinkedList;
@@ -345,7 +346,7 @@ public class SliderView extends FrameLayout {
         translate = new ValueAnimator();
         translate.setDuration(duration);
         translate.setIntValues((int) getX(), x);
-        translate.setInterpolator(new AccelerateDecelerateInterpolator());
+        translate.setInterpolator(new DecelerateInterpolator());
         translate.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
