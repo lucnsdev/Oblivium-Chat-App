@@ -200,4 +200,11 @@ public class FragmentPersons extends FragmentView {
     public void onDestroy() {
 
     }
+
+    @Override
+    public boolean onBackPressed() {
+        if (getActivity().isFinishing()) return true;
+        getActivity().finish();
+        return false;
+    }
 }

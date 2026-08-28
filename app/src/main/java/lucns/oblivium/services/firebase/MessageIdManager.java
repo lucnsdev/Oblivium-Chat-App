@@ -2,7 +2,7 @@ package lucns.oblivium.services.firebase;
 
 public class MessageIdManager {
 
-    private long id;
+    private int id;
     private static MessageIdManager instance;
 
     public static MessageIdManager getInstance() {
@@ -16,7 +16,7 @@ public class MessageIdManager {
 
     protected MessageIdManager() {}
 
-    protected long next() {
+    protected int next() {
         return id++;
     }
 }

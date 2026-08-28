@@ -1,7 +1,5 @@
 package lucns.oblivium.data.models;
 
-import lucns.oblivium.services.PersonsManager;
-
 public class Person {
     public String username, registerId;
     public long timestamp;
@@ -23,6 +21,5 @@ public class Person {
         System.arraycopy(conversation, 0, messages, 0, conversation.length);
         messages[conversation.length] = message;
         conversation = messages;
-        PersonsManager.getInstance(null).appendMessage(username, message);
     }
 }

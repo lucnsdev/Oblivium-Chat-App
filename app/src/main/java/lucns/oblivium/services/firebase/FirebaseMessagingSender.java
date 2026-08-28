@@ -30,7 +30,7 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
     private MessageIdManager idManager;
 
     public interface Callback {
-        void onFinish(long id, int responseCode, String responseMessage);
+        void onFinish(int id, int responseCode, String responseMessage);
     }
 
     private final Callback callback;
@@ -49,8 +49,8 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
         else setAccessToken(gToken.token);
     }
 
-    public long put(JSONObject jsonObject) {
-        long id = idManager.next();
+    public int put(JSONObject jsonObject) {
+        int id = idManager.next();
         boolean emptying = !listMessages.isEmpty();
         listMessages.add(new Message(id, jsonObject));
         if (!emptying) dequeue();
@@ -207,9 +207,9 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
 
     private static class Message {
         public JSONObject data;
-        public long id;
+        public int id;
 
-        public Message(long id, JSONObject data) {
+        public Message(int id, JSONObject data) {
             this.id = id;
             this.data = data;
         }

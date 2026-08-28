@@ -45,11 +45,6 @@ public class PersonsAdapter extends ArrayAdapter<Person> {
         return list.get(position);
     }
 
-    @Override
-    public int getViewTypeCount() {
-        return 2;
-    }
-
     private void reorder() {
         if (list.size() < 2) return;
         list.sort(new Comparator<Person>() {

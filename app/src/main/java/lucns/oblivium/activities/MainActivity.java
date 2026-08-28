@@ -43,17 +43,12 @@ public class MainActivity extends Activity {
         user = User.getInstance();
 
         PersonsManager personsManager = PersonsManager.getInstance(this);
-        fragmentConversation = new FragmentConversation(this, personsManager);
+        fragmentConversation = new FragmentConversation(this);
         FragmentPersons fragmentPersons = new FragmentPersons(this, personsManager);
         personsManager.setCallback(new PersonsManager.Callback() {
             @Override
             public void onPersonsAvailable() {
                 fragmentPersons.update();
-            }
-
-            @Override
-            public void onConversationAvailable() {
-                fragmentConversation.update();
             }
         });
         sliderView = findViewById(R.id.sliderView);
@@ -74,8 +69,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onBackInvoked() {
-            if (sliderView.getCurrentIndex() == 0) finish();
-            else goToPersons();
+            sliderView.onBackPressed();
         }
     };
 

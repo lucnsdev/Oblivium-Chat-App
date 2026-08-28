@@ -7,16 +7,8 @@ import android.os.Looper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import lucns.oblivium.data.models.Message;
@@ -27,13 +19,12 @@ public class PersonsManager {
 
     public interface Callback {
         void onPersonsAvailable();
-
-        void onConversationAvailable();
     }
 
     private Callback callback;
     private final String personsPath;
     private Person[] persons;
+    private ConversationStorageManager conversationStorageManager;
     private static PersonsManager instance;
 
     public static PersonsManager getInstance(Context context) {
@@ -46,6 +37,7 @@ public class PersonsManager {
     }
 
     private PersonsManager(Context context) {
+        this.conversationStorageManager = new ConversationStorageManager(context);
         this.personsPath = context.getExternalFilesDir(null).getPath() + "/persons";
     }
 
@@ -60,21 +52,21 @@ public class PersonsManager {
     public void addPerson(Person person) {
         if (persons == null) {
             persons = new Person[]{person};
-            savePersonToStorage(person);
+            writePerson(person);
             return;
         }
         Person[] persons2 = new Person[persons.length + 1];
         System.arraycopy(persons, 0, persons2, 0, persons.length);
         persons2[persons.length] = person;
         persons = persons2;
-        savePersonToStorage(person);
+        writePerson(person);
         callback.onPersonsAvailable();
     }
 
     public void comparePersons(Person[] remotePersons) {
         if (persons == null) {
             persons = remotePersons;
-            for (Person p : persons) savePersonToStorage(p);
+            for (Person p : persons) writePerson(p);
         } else {
             Map<String, Person> map = new HashMap<>();
             for (Person p : persons) map.put(p.username, p);
@@ -83,31 +75,16 @@ public class PersonsManager {
                     Person person = map.get(p.username);
                     if (person.registerId == null || (!person.registerId.equals(p.registerId) && p.registerId != null)) {
                         person.registerId = p.registerId;
-                        savePersonToStorage(person);
+                        writePerson(person);
                     }
                     continue;
                 }
                 map.put(p.username, p);
-                savePersonToStorage(p);
+                writePerson(p);
             }
             persons = map.values().toArray(new Person[0]);
         }
         callback.onPersonsAvailable();
-    }
-
-    public void requestConversation(Person person) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                person.conversation = readAllMessages(person.username);
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.onConversationAvailable();
-                    }
-                });
-            }
-        }).start();
     }
 
     public boolean hasPersons() {
@@ -132,7 +109,8 @@ public class PersonsManager {
                 persons = new Person[folders.length];
                 for (int i = 0; i < folders.length; i++) {
                     persons[i] = readPerson(folders[i].getName());
-                    persons[i].conversation = new Message[]{getLastMessage(folders[i].getName())};
+                    conversationStorageManager.setPerson(persons[i]);
+                    persons[i].conversation = new Message[]{conversationStorageManager.getLastMessage()};
                 }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -155,92 +133,19 @@ public class PersonsManager {
         }
     }
 
-    private Person readPerson(String folderName) {
+    public Person readPerson(String username) {
         Annotator annotator = new Annotator();
-        annotator.setFullPath(personsPath + "/" + folderName + "/data.json");
+        annotator.setFullPath(personsPath + "/" + username + "/data.json");
         try {
             JSONObject jsonObject = new JSONObject(annotator.getContent());
-            return new Person(folderName, jsonObject.optString("fcm_register_id"), jsonObject.getLong("timestamp"));
+            return new Person(username, jsonObject.optString("fcm_register_id"), jsonObject.getLong("timestamp"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private Message jsonToMessage(String json) {
-        Message message = new Message();
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            message.username = jsonObject.getString("username");
-            message.text = jsonObject.optString("text", null);
-            message.timestamp = jsonObject.getLong("timestamp");
-            message.filePath = jsonObject.optString("file_path", null);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return message;
-    }
-
-    public void appendMessage(String username, Message message) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("username", username);
-            jsonObject.put("text", message.text);
-            jsonObject.put("timestamp", message.timestamp);
-            if (message.filePath != null) jsonObject.put("file_path", message.filePath);
-            append(personsPath + "/" + username + "/conversation.json", jsonObject.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Message[] readAllMessages(String username) {
-        File file = new File(personsPath + "/" + username + "/conversation.json");
-        if (!file.exists()) return null;
-        List<Message> list = new LinkedList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            do {
-                line = reader.readLine();
-                list.add(jsonToMessage(line));
-            } while (line != null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return list.toArray(new Message[0]);
-    }
-
-    private Message getLastMessage(String username) {
-        String last = readLast(personsPath + "/" + username + "/conversation.json");
-        if (last == null) return null;
-        return jsonToMessage(last);
-    }
-
-    private String readLast(String path) {
-        if (!new File(path).exists()) return null;
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-            String line;
-            do {
-                line = reader.readLine();
-            } while (line != null);
-            return line;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private void append(String path, String line) {
-        File file = new File(path);
-        if (file.length() > 0 && !line.startsWith("\n")) line = "\n" + line;
-        try (FileChannel sbc = FileChannel.open(file.toPath(), StandardOpenOption.APPEND)) {
-            sbc.write(ByteBuffer.wrap(line.getBytes()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void savePersonToStorage(Person person) {
+    public void writePerson(Person person) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", person.username);

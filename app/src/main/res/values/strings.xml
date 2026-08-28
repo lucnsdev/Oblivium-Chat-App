@@ -38,6 +38,8 @@
     <string name="reject">Reject</string>
     <string name="or">or</string>
     <string name="no_contact">No Contact</string>
+    <string name="no_messages">No messages.</string>
+    <string name="message">Message</string>
 
     <string name="persons_count">%d contact%s</string>
     <string name="format_few_ago">A few %s ago</string>
