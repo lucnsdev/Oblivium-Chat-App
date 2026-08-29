@@ -1,8 +1,11 @@
 package lucns.oblivium.activities.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
-import android.view.WindowInsets;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -14,7 +17,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import lucns.oblivium.R;
+import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.activities.MainActivity;
 import lucns.oblivium.adapters.ConversationAdapter;
 import lucns.oblivium.data.models.Person;
@@ -25,7 +34,6 @@ import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Utils;
 import lucns.oblivium.views.FragmentView;
 import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
-import lucns.oblivium.views.IndeterminateThreeBalls;
 
 public class FragmentConversation extends FragmentView {
     private TextView textUsername;
@@ -40,10 +48,12 @@ public class FragmentConversation extends FragmentView {
     private ConversationAdapter listAdapter;
     private HorizontalIndeterminateThreeBalls threeBalls;
     private IdCatcher idCatcher;
+    private CustomDialog dialog;
 
     public FragmentConversation(Activity activity) {
         super(activity);
         this.listAdapter = new ConversationAdapter(activity);
+        this.dialog = new CustomDialog(activity);
         this.conversationStorageManager = new ConversationStorageManager(activity);
         this.conversationStorageManager.setCallback(new ConversationStorageManager.Callback() {
             @Override
@@ -61,23 +71,6 @@ public class FragmentConversation extends FragmentView {
             }
         });
         this.appName = activity.getString(R.string.app_name).toLowerCase();
-
-        setOnApplyWindowInsetsListener(new OnApplyWindowInsetsListener() {
-
-            float lastY;
-
-            @Override
-            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                int keyboardHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
-                if (keyboardHeight > 0) {
-                    lastY = rootEditText.getY();
-                    rootEditText.setY(lastY - keyboardHeight);
-                } else {
-                    rootEditText.setY(lastY);
-                }
-                return insets;
-            }
-        });
     }
 
     @Override
@@ -96,10 +89,34 @@ public class FragmentConversation extends FragmentView {
             public void onClick(View v) {
                 if (v.getId() == R.id.buttonBack) {
                     ((MainActivity) getActivity()).goToPersons();
+                } else if (v.getId() == R.id.buttonSend) {
+
+                } else if (v.getId() == R.id.buttonAttach) {
+                    dialog.showDialogMedia(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                            Intent intent;
+                            if (v.getId() == R.id.buttonImage) {
+                                intent = new Intent(Intent.ACTION_PICK);
+                                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                            } else if (v.getId() == R.id.buttonVideo) {
+                                intent = new Intent(Intent.ACTION_PICK);
+                                intent.setDataAndType(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video/*");
+                            } else {
+                                intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                                intent.setType("*/*");
+                            }
+                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                            getActivity().startActivityForResult(intent, 1234);
+                        }
+                    });
                 }
             }
         };
         findViewById(R.id.buttonBack).setOnClickListener(onClickListener);
+        findViewById(R.id.buttonSend).setOnClickListener(onClickListener);
+        findViewById(R.id.buttonAttach).setOnClickListener(onClickListener);
     }
 
     public void setPerson(Person person) {
@@ -117,6 +134,57 @@ public class FragmentConversation extends FragmentView {
         conversationStorageManager.requestConversation();
     }
 
+    public void onFilePicked(Uri uri) {
+        dialog.showDialogWait(R.string.loading);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                File file = copyFile(uri);
+                dialog.dismiss();
+                if (file == null || !file.exists() || file.length() == 0) {
+                    dialog.showDialogConsent(R.string.error_file_read, new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
+                    return;
+                }
+                Log.d("lucas", "path " + file.getPath());
+                file.delete();
+            }
+        }).start();
+    }
+
+    private File copyFile(Uri uri) {
+        try {
+            InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);
+            if (inputStream == null) return null;
+
+            File tempFile = new File(getActivity().getCacheDir(), "temp_file_" + System.currentTimeMillis());
+            OutputStream outputStream = new FileOutputStream(tempFile);
+
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+
+            outputStream.close();
+            inputStream.close();
+
+            if (tempFile.exists() && tempFile.length() > 0) return tempFile;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public View getMobileView() {
+        return rootEditText;
+    }
+
     @Override
     public void onResume() {
 
@@ -124,12 +192,12 @@ public class FragmentConversation extends FragmentView {
 
     @Override
     public void onPause() {
-
+        dialog.dismiss();
     }
 
     @Override
     public void onDestroy() {
-
+        dialog.dismiss();
     }
 
     private class IdCatcher {

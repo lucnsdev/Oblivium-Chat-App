@@ -80,6 +80,10 @@ public abstract class FragmentView extends RelativeLayout {
         onDestroy();
     }
 
+    public View getMobileView() {
+        return null;
+    }
+
     public abstract void onCreate();
 
     public abstract void onResume();

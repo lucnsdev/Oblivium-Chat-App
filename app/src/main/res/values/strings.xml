@@ -40,6 +40,7 @@
     <string name="no_contact">No Contact</string>
     <string name="no_messages">No messages.</string>
     <string name="message">Message</string>
+    <string name="canceled">Canceled</string>
 
     <string name="persons_count">%d contact%s</string>
     <string name="format_few_ago">A few %s ago</string>
@@ -52,6 +53,9 @@
     <string name="inviting">Inviting.</string>
     <string name="sent_by">Sent by:</string>
     <string name="sent_to">Sent to:</string>
+    <string name="files">Files</string>
+    <string name="videos">Videos</string>
+    <string name="images">Images</string>
 
     <string name="correct_password">Correct Password</string>
     <string name="back">Back</string>
@@ -75,4 +79,5 @@
     <string name="error_retry">Network error. Touch to retry.</string>
     <string name="error_invalid_username">Invalid username!</string>
     <string name="error_user_not_exists">User not exists!</string>
+    <string name="error_file_read">Failed to read file.</string>
 </resources>

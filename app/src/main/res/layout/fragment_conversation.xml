@@ -74,6 +74,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/rootEditText"
         android:layout_below="@+id/toolbar"
         android:layout_marginTop="@dimen/margin_2">
 
@@ -91,18 +92,18 @@
             android:layout_centerInParent="true"
             android:text="@string/no_messages"
             android:textColor="@color/gray" />
-
-        <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:divider="@color/list_divider"
-            android:dividerHeight="1dp"
-            android:listSelector="@android:color/transparent"
-            android:scrollbarSize="1dp"
-            android:scrollbarThumbVertical="@drawable/thumb_scrollbar"
-            android:visibility="invisible" />
     </RelativeLayout>
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@color/list_divider"
+        android:dividerHeight="1dp"
+        android:listSelector="@android:color/transparent"
+        android:scrollbarSize="1dp"
+        android:scrollbarThumbVertical="@drawable/thumb_scrollbar"
+        android:visibility="invisible" />
 
     <LinearLayout
         android:id="@+id/rootEditText"
@@ -110,29 +111,42 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="@dimen/margin_5"
-        android:paddingStart="@dimen/margin_3"
         android:layout_marginBottom="@dimen/margin_8"
         android:background="@drawable/edittext_background"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/margin_3">
 
         <EditText
             android:id="@+id/editText"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_height="@dimen/edit_text"
             android:background="@android:color/transparent"
             android:hint="@string/message"
-            android:inputType="text"
+            android:inputType="textMultiLine|textCapSentences"
+            android:maxHeight="110dp"
             android:maxLength="1024"
+            android:minHeight="@dimen/edit_text"
+            android:paddingVertical="@dimen/margin_2"
             android:paddingEnd="@dimen/margin_2"
             android:textColor="@drawable/text_state"
             android:textColorHint="@color/hint"
             android:textCursorDrawable="@drawable/cursor" />
 
         <ImageButton
+            android:id="@+id/buttonAttach"
             android:layout_width="@dimen/edit_text"
-            android:src="@drawable/icon_send"
             android:layout_height="@dimen/edit_text"
-            android:background="@drawable/fab_transparent"/>
+            android:layout_gravity="center"
+            android:background="@drawable/fab_transparent"
+            android:src="@drawable/icon_attach" />
+
+        <ImageButton
+            android:id="@+id/buttonSend"
+            android:layout_width="@dimen/edit_text"
+            android:layout_height="@dimen/edit_text"
+            android:layout_gravity="center"
+            android:background="@drawable/fab_transparent"
+            android:src="@drawable/icon_send" />
     </LinearLayout>
 </RelativeLayout>

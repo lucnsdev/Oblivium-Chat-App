@@ -65,6 +65,14 @@ public class CustomDialog {
         showDialogConsent(activity.getString(title), activity.getString(description), onClickListener);
     }
 
+    public void showDialogMedia(View.OnClickListener onClickListener) {
+        Dialog d = generateDialog(R.layout.dialog_file_selection, true);
+        d.findViewById(R.id.buttonImage).setOnClickListener(onClickListener);
+        d.findViewById(R.id.buttonVideo).setOnClickListener(onClickListener);
+        d.findViewById(R.id.buttonFile).setOnClickListener(onClickListener);
+        d.show();
+    }
+
     public void showDialogConsent(String title, String description, View.OnClickListener onClickListener) {
         Dialog d = generateDialog(R.layout.dialog_information, false);
         TextView textTitle = d.findViewById(R.id.textTitle);

@@ -6,11 +6,15 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -63,6 +67,54 @@ public class SliderView extends FrameLayout {
     private void initialize() {
         minimumSwipe = WIDTH_DISPLAY / 10;
         queue = new LinkedList<>();
+
+        setOnApplyWindowInsetsListener(new OnApplyWindowInsetsListener() {
+
+            int initialMargin;
+            boolean in;
+
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                if (getChildCount() == 0) return insets;
+                FragmentView fragment = getFragment(lastIndex);
+                View mobileView = fragment.getMobileView();
+                if (mobileView == null) return insets;
+                int keyboardHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
+                if (keyboardHeight > 0) {
+                    RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) mobileView.getLayoutParams();
+                    if (!in) initialMargin = p.bottomMargin;
+                    in = true;
+                    changeMobileView(mobileView, initialMargin + keyboardHeight, true);
+                    //p.bottomMargin = initialMargin + keyboardHeight;
+                    //mobileView.setLayoutParams(p);
+                } else {
+                    in = false;
+                    changeMobileView(mobileView, initialMargin, false);
+                    /*
+                    RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) mobileView.getLayoutParams();
+                    p.bottomMargin = initialMargin;
+                    mobileView.setLayoutParams(p);
+                     */
+                }
+                return insets;
+            }
+        });
+    }
+
+    private void changeMobileView(View v, int margin, boolean in) {
+        RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) v.getLayoutParams();
+        ValueAnimator translate = new ValueAnimator();
+        translate.setDuration(200);
+        translate.setIntValues(p.bottomMargin, margin);
+        translate.setInterpolator(in ? new DecelerateInterpolator() : new AccelerateInterpolator());
+        translate.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                p.bottomMargin = (Integer) animation.getAnimatedValue();
+                v.setLayoutParams(p);
+            }
+        });
+        translate.start();
     }
 
     public void disableScroll(boolean state) {
