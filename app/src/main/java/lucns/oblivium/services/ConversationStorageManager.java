@@ -23,13 +23,13 @@ import lucns.oblivium.data.models.Person;
 public class ConversationStorageManager {
 
     public interface Callback {
-        void onConversationAvailable();
+        void onConversationAvailable(Message[] messages);
     }
 
     private Callback callback;
 
     private final String basePath;
-    private String personPath;
+    private String personPath, messagesPath;
     private Person person;
 
     public ConversationStorageManager(Context context) {
@@ -48,62 +48,35 @@ public class ConversationStorageManager {
     public void setPerson(Person person) {
         this.person = person;
         this.personPath = basePath + "/" + person.username;
+        this.messagesPath = personPath + "/conversation.obl";
     }
 
     public void requestConversation() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                person.conversation = readAllMessages();
+                Message[] messages = readAllMessages();
+                if (messages != null && messages.length > 0) person.lastMessage = messages[messages.length - 1];
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onConversationAvailable();
+                        callback.onConversationAvailable(messages);
                     }
                 });
             }
         }).start();
     }
 
-    private Message jsonToMessage(String json) {
-        String[] segments = json.split(Message.DELIMITER);
-        Message message = new Message();
-        try {
-            JSONObject jsonObject = new JSONObject(segments[1]);
-            message.timestamp = Long.parseLong(segments[0]);
-            message.username = jsonObject.getString("username");
-            message.text = jsonObject.optString("text", null);
-            message.filePath = jsonObject.optString("file_path", null);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return message;
-    }
-
-    private String messageToJson(Message message) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("username", person.username);
-            jsonObject.put("text", message.text);
-            jsonObject.put("sent", message.sent);
-            if (message.filePath != null) jsonObject.put("file_path", message.filePath);
-            return message.timestamp + Message.DELIMITER + jsonObject;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public void updateMessage(Message message) {
-        File file = new File(personPath + "/conversation.json");
+        File file = new File(messagesPath);
         if (!file.exists()) return;
         StringBuilder builder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while((line = reader.readLine()) != null) {
                 if (builder.length() > 0) builder.append("\n");
-                if (line.startsWith(String.valueOf(message.timestamp))) builder.append(messageToJson(message));
-                else builder.append(jsonToMessage(line));
+                if (line.startsWith(String.valueOf(message.timestamp))) builder.append(message.toString());
+                else builder.append(message.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,19 +84,17 @@ public class ConversationStorageManager {
     }
 
     public void appendMessage(Message message) {
-        String content = messageToJson(message);
-        if (content == null) return;
-        append(personPath + "/conversation.json",  content);
+        append(messagesPath,  message.toString());
     }
 
     private Message[] readAllMessages() {
-        File file = new File(personPath + "/conversation.json");
+        File file = new File(messagesPath);
         if (!file.exists()) return null;
         List<Message> list = new LinkedList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while((line = reader.readLine()) != null) {
-                list.add(jsonToMessage(line));
+                list.add(Message.fromString(line));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -132,9 +103,9 @@ public class ConversationStorageManager {
     }
 
     public Message getLastMessage() {
-        String last = readLast(personPath + "/conversation.json");
+        String last = readLast(messagesPath);
         if (last == null) return null;
-        return jsonToMessage(last);
+        return Message.fromString(last);
     }
 
     private String readLast(String path) {

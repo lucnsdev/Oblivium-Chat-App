@@ -75,6 +75,11 @@
     <string name="accept_description">Accept %s friend person invite?</string>
     <string name="cancel_description">Cancel %s friend person invite?</string>
 
+    <string name="few_seconds">Few seconds ago</string>
+    <string name="format_minutes">%d minute%s ago</string>
+    <string name="format_hours">%d hour%s ago</string>
+    <string name="format_days">%d day%s ago</string>
+
     <string name="error_no_connection">No internet connection.</string>
     <string name="error_retry">Network error. Touch to retry.</string>
     <string name="error_invalid_username">Invalid username!</string>

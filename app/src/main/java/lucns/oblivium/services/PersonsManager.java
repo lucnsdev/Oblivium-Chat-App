@@ -110,7 +110,7 @@ public class PersonsManager {
                 for (int i = 0; i < folders.length; i++) {
                     persons[i] = readPerson(folders[i].getName());
                     conversationStorageManager.setPerson(persons[i]);
-                    persons[i].conversation = new Message[]{conversationStorageManager.getLastMessage()};
+                    persons[i].lastMessage = conversationStorageManager.getLastMessage();
                 }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override

@@ -47,6 +47,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d("lucas", "action " + action);
             switch (action) {
                 case Constants.ACTION_MESSAGE:
+
                     break;
                 case Constants.ACTION_INVITE_ACCEPTED:
                     Person person = new Person(map.get("username"), map.get("fcm_register_id"), Long.valueOf(map.get("timestamp")));

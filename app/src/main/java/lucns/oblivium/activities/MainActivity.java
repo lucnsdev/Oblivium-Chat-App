@@ -68,6 +68,10 @@ public class MainActivity extends Activity {
         getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);
     }
 
+    public void updatePersonItem(Person person) {
+        // update last message in list item
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

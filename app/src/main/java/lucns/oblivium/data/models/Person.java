@@ -3,7 +3,7 @@ package lucns.oblivium.data.models;
 public class Person {
     public String username, registerId;
     public long timestamp;
-    public Message[] conversation;
+    public Message lastMessage;
 
     public Person(String username, String registerId, long timestamp) {
         this.username = username;
@@ -12,14 +12,7 @@ public class Person {
     }
 
     public long getTimestamp() {
-        if (conversation != null && conversation[conversation.length - 1].timestamp > timestamp) return conversation[conversation.length - 1].timestamp;
+        if (lastMessage != null && lastMessage.timestamp > timestamp) return lastMessage.timestamp;
         return timestamp;
-    }
-
-    public void append(Message message) {
-        Message[] messages = new Message[conversation.length + 1];
-        System.arraycopy(conversation, 0, messages, 0, conversation.length);
-        messages[conversation.length] = message;
-        conversation = messages;
     }
 }

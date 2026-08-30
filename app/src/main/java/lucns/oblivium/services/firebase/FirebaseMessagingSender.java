@@ -35,7 +35,7 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
 
     private final Callback callback;
     private final Context context;
-    private final Queue<Message> listMessages;
+    private final Queue<FirebaseMessage> listMessages;
     private boolean requestingToken;
 
     public FirebaseMessagingSender(Context context, Callback callback) {
@@ -52,7 +52,7 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
     public int put(JSONObject jsonObject) {
         int id = idManager.next();
         boolean emptying = !listMessages.isEmpty();
-        listMessages.add(new Message(id, jsonObject));
+        listMessages.add(new FirebaseMessage(id, jsonObject));
         if (!emptying) dequeue();
         return id;
     }
@@ -74,7 +74,7 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
                     });
                     return;
                 }
-                Message message = listMessages.remove();
+                FirebaseMessage message = listMessages.remove();
                 setMessage(message.data);
                 requestPost();
 
@@ -205,11 +205,11 @@ public class FirebaseMessagingSender extends FirebaseMessagingSenderBase {
         }
     }
 
-    private static class Message {
+    private static class FirebaseMessage {
         public JSONObject data;
         public int id;
 
-        public Message(int id, JSONObject data) {
+        public FirebaseMessage(int id, JSONObject data) {
             this.id = id;
             this.data = data;
         }

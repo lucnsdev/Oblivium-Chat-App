@@ -1,11 +1,16 @@
 package lucns.oblivium.activities.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -21,11 +26,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.activities.MainActivity;
 import lucns.oblivium.adapters.ConversationAdapter;
+import lucns.oblivium.data.User;
+import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.ConversationStorageManager;
 import lucns.oblivium.services.PacketSenderManager;
@@ -38,7 +47,6 @@ import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
 public class FragmentConversation extends FragmentView {
     private TextView textUsername;
     private Person person;
-    private ConversationStorageManager conversationStorageManager;
     private PacketSenderManager packetSenderManager;
     private final String appName;
     private ListView listView;
@@ -49,28 +57,32 @@ public class FragmentConversation extends FragmentView {
     private HorizontalIndeterminateThreeBalls threeBalls;
     private IdCatcher idCatcher;
     private CustomDialog dialog;
+    private User user;
+    private String fcmRegisterId;
+    private Queue<Message> queue;
 
     public FragmentConversation(Activity activity) {
         super(activity);
         this.listAdapter = new ConversationAdapter(activity);
         this.dialog = new CustomDialog(activity);
-        this.conversationStorageManager = new ConversationStorageManager(activity);
-        this.conversationStorageManager.setCallback(new ConversationStorageManager.Callback() {
+        this.appName = activity.getString(R.string.app_name).toLowerCase();
+        this.user = User.getInstance();
+        this.queue = new LinkedList<>();
+        packetSenderManager = PacketSenderManager.getInstance();
+        packetSenderManager.setOnSentListener(new PacketSenderManager.OnSentListener() {
+
             @Override
-            public void onConversationAvailable() {
-                if (person.conversation == null || person.conversation.length == 0) {
-                    threeBalls.setVisibility(INVISIBLE);
-                    listView.setVisibility(INVISIBLE);
-                    textEmpty.setVisibility(VISIBLE);
-                    return;
+            public void onSent(PacketSenderManager.Packet packet) {
+                ConversationStorageManager conversationStorageManager = new ConversationStorageManager(getActivity());
+                conversationStorageManager.setPerson(packet.getPerson());
+                conversationStorageManager.updateMessage(packet.getMessage());
+                if (person.username.equals(packet.getPerson().username)) {
+                    Utils.vibrate();
+                    listAdapter.update(packet.getMessage());
                 }
-                textEmpty.setVisibility(INVISIBLE);
-                threeBalls.setVisibility(INVISIBLE);
-                listAdapter.setAll(person.conversation);
-                listView.setVisibility(VISIBLE);
+                ((MainActivity) getActivity()).updatePersonItem(packet.getPerson());
             }
         });
-        this.appName = activity.getString(R.string.app_name).toLowerCase();
     }
 
     @Override
@@ -84,13 +96,31 @@ public class FragmentConversation extends FragmentView {
         editText = findViewById(R.id.editText);
         rootEditText = findViewById(R.id.rootEditText);
 
+        ConversationStorageManager conversationStorageManager = new ConversationStorageManager(getActivity());
         View.OnClickListener onClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.buttonBack) {
                     ((MainActivity) getActivity()).goToPersons();
                 } else if (v.getId() == R.id.buttonSend) {
+                    Editable editable = editText.getText();
+                    String text = editable.toString().trim();
+                    if (text.isEmpty()) return;
+                    Utils.vibrate();
+                    editable.clear();
+                    Message message = new Message(user.getUsername(), text);
+                    listAdapter.add(message);
+                    listView.setVisibility(VISIBLE);
+                    textEmpty.setVisibility(INVISIBLE);
+                    threeBalls.setVisibility(INVISIBLE);
 
+                    conversationStorageManager.setPerson(person);
+                    conversationStorageManager.appendMessage(message);
+                    if (!Utils.hasInternetConnection() || fcmRegisterId == null) {
+                        queue.add(message);
+                    } else {
+                        sendMessage(message);
+                    }
                 } else if (v.getId() == R.id.buttonAttach) {
                     dialog.showDialogMedia(new OnClickListener() {
                         @Override
@@ -119,8 +149,24 @@ public class FragmentConversation extends FragmentView {
         findViewById(R.id.buttonAttach).setOnClickListener(onClickListener);
     }
 
+    private void sendMessage(Message message) {
+        PacketSenderManager.Packet packet = new PacketSenderManager.Packet();
+        packet.setPerson(person);
+        packet.setMessage(message);
+        packetSenderManager.put(packet);
+    }
+
+    private void dequeueMessages() {
+        if (queue.isEmpty() || !Utils.hasInternetConnection() || fcmRegisterId == null) return;
+        while (!queue.isEmpty()) {
+            sendMessage(queue.remove());
+        }
+    }
+
     public void setPerson(Person person) {
         this.person = person;
+        this.fcmRegisterId = null;
+        rootEditText.setVisibility(INVISIBLE);
         if (person.username.equals(getString(R.string.app_name).toLowerCase())) findViewById(R.id.iconVerified).setVisibility(VISIBLE);
         textUsername.setText("@" + person.username);
         threeBalls.setVisibility(VISIBLE);
@@ -130,8 +176,35 @@ public class FragmentConversation extends FragmentView {
             idCatcher = new IdCatcher(person);
             idCatcher.request();
         }
+        ConversationStorageManager conversationStorageManager = new ConversationStorageManager(getActivity());
         conversationStorageManager.setPerson(person);
+        conversationStorageManager.setCallback(new ConversationStorageManager.Callback() {
+            @Override
+            public void onConversationAvailable(Message[] messages) {
+                if (!FragmentConversation.this.person.username.equals(person.username)) return;
+                showEditText();
+                if (messages == null || messages.length == 0) {
+                    threeBalls.setVisibility(INVISIBLE);
+                    listView.setVisibility(INVISIBLE);
+                    textEmpty.setVisibility(VISIBLE);
+                    return;
+                }
+                textEmpty.setVisibility(INVISIBLE);
+                threeBalls.setVisibility(INVISIBLE);
+                listAdapter.setAll(messages);
+                listView.setVisibility(VISIBLE);
+            }
+        });
         conversationStorageManager.requestConversation();
+    }
+
+    private void showEditText() {
+        rootEditText.setAlpha(0f);
+        rootEditText.setVisibility(VISIBLE);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(rootEditText, View.ALPHA, 0f, 1f);;
+        alpha.setInterpolator(new LinearInterpolator());
+        alpha.setDuration(500);
+        alpha.start();
     }
 
     public void onFilePicked(Uri uri) {
@@ -225,7 +298,8 @@ public class FragmentConversation extends FragmentView {
                         p.registerId = id;
                     }
                     if (canceled) return;
-
+                    fcmRegisterId = id;
+                    dequeueMessages();
                 }
 
                 @Override
