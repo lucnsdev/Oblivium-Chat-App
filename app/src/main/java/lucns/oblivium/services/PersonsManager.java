@@ -14,6 +14,7 @@ import java.util.Map;
 import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.utils.Annotator;
+import lucns.oblivium.utils.Constants;
 
 public class PersonsManager {
 
@@ -139,7 +140,7 @@ public class PersonsManager {
         annotator.setFullPath(personsPath + "/" + username + "/data.json");
         try {
             JSONObject jsonObject = new JSONObject(annotator.getContent());
-            return new Person(username, jsonObject.optString("fcm_register_id"), jsonObject.getLong("timestamp"));
+            return new Person(username, jsonObject.optString(Constants.FCM_ID), jsonObject.getLong("timestamp"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -150,7 +151,7 @@ public class PersonsManager {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", person.username);
-            if (person.registerId != null) jsonObject.put("fcm_register_id", person.registerId);
+            if (person.registerId != null) jsonObject.put(Constants.FCM_ID, person.registerId);
             jsonObject.put("timestamp", person.timestamp);
             Annotator annotator = new Annotator();
             annotator.setFullPath(personsPath + "/" + person.username + "/data.json");

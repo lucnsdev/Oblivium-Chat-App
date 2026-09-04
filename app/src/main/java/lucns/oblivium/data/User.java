@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import lucns.oblivium.utils.Annotator;
+import lucns.oblivium.utils.Constants;
 
 public class User {
 
@@ -71,7 +72,7 @@ public class User {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", username);
-            jsonObject.put("fcm_register_id", registerId);
+            jsonObject.put(Constants.FCM_ID, registerId);
             jsonObject.put("login_timestamp", loginTimestamp);
             jsonObject.put("is_pending_shipment", isPendingShipment);
             jsonObject.put("signed", signed);
@@ -87,7 +88,7 @@ public class User {
         try {
             JSONObject jsonObject = new JSONObject(annotator.getContent());
             username = jsonObject.getString("username");
-            registerId = jsonObject.getString("fcm_register_id");
+            registerId = jsonObject.getString(Constants.FCM_ID);
             loginTimestamp = jsonObject.getLong("login_timestamp");
             isPendingShipment = jsonObject.getBoolean("is_pending_shipment");
             signed = jsonObject.getBoolean("signed");

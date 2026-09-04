@@ -98,12 +98,13 @@
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@color/list_divider"
         android:layout_below="@id/toolbar"
-        android:dividerHeight="1dp"
+        android:layout_marginTop="@dimen/margin_3"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="4dp"
         android:listSelector="@android:color/transparent"
         android:scrollbarSize="1dp"
-        android:scrollbarThumbVertical="@drawable/thumb_scrollbar"
+        android:scrollbarThumbVertical="@android:color/transparent"
         android:visibility="invisible" />
 
     <LinearLayout

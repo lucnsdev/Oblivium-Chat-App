@@ -287,7 +287,7 @@ public class LoginActivity extends Activity {
             map.put("password", password);
             map.put("login_timestamp", now);
             map.put("access_timestamp", now);
-            map.put("fcm_register_id", user.getRegisterId());
+            map.put(Constants.FCM_ID, user.getRegisterId());
             map.put("device_id", deviceId);
 
             database.addListenerForSingleValueEvent(new ValueEventListener() {

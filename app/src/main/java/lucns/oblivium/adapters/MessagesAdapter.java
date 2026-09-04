@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
@@ -21,7 +20,7 @@ import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Message;
 import lucns.oblivium.utils.Utils;
 
-public class ConversationAdapter extends ArrayAdapter<Message> {
+public class MessagesAdapter extends ArrayAdapter<Message> {
 
     private User user;
     private final LayoutInflater inflater;
@@ -29,7 +28,7 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
     private CustomDialog dialog;
     private View[] views;
 
-    public ConversationAdapter(Context context) {
+    public MessagesAdapter(Context context) {
         super(context, 0);
         this.user = User.getInstance();
         this.inflater = LayoutInflater.from(context);
@@ -42,7 +41,7 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
         list.sort(new Comparator<Message>() {
             @Override
             public int compare(Message o1, Message o2) {
-                return Long.compare(o2.timestamp, o1.timestamp);
+                return Long.compare(o1.timestamp, o2.timestamp);
             }
         });
     }
@@ -77,10 +76,14 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
     @Override
     public void add(Message message) {
         list.add(message);
-        View[] v = new View[views.length + 1];
-        System.arraycopy(views, 0, v, 0, views.length);
-        views = v;
-        reorder();
+        if (views == null) {
+            views = new View[1];
+        } else {
+            View[] v = new View[views.length + 1];
+            System.arraycopy(views, 0, v, 0, views.length);
+            views = v;
+            reorder();
+        }
         notifyDataSetChanged();
     }
 
@@ -94,14 +97,16 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
     public void update(Message message) {
         for (int position = 0; position < list.size(); position++) {
             if (message.timestamp == list.get(position).timestamp) {
-                list.add(position, message);
-                update(message, position);
+                list.set(position, message);
+                notifyDataSetChanged();
                 break;
             }
         }
     }
 
-    private void update(Message message, int index) {
+    @Override
+    public View getView(int index, View convertView, ViewGroup parent) {
+        Message message = list.get(index);
         boolean i = message.username.equals(user.getUsername());
         if (views[index] == null) {
             views[index] = inflater.inflate(i ? R.layout.item_message_right : R.layout.item_message_left, null, false);
@@ -111,12 +116,6 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
         }
         ((TextView) views[index].findViewById(R.id.textMessage)).setText(message.text.content);
         ((TextView) views[index].findViewById(R.id.textDateTime)).setText(Utils.getDateTime(message.timestamp));
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        Message message = list.get(position);
-        update(message);
-        return views[position];
+        return views[index];
     }
 }

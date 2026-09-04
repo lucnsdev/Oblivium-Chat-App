@@ -3,9 +3,7 @@ package lucns.oblivium.services;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -73,18 +71,24 @@ public class ConversationStorageManager {
         StringBuilder builder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (builder.length() > 0) builder.append("\n");
-                if (line.startsWith(String.valueOf(message.timestamp))) builder.append(message.toString());
-                else builder.append(message.toString());
+                if (line.startsWith(String.valueOf(message.timestamp))) {
+                    builder.append(message.timestamp);
+                    builder.append(' ');
+                    builder.append(message.toString());
+                } else  {
+                    builder.append(line);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        write(messagesPath,  builder.toString());
     }
 
     public void appendMessage(Message message) {
-        append(messagesPath,  message.timestamp + " " + message.toString());
+        append(messagesPath, message.timestamp + " " + message.toString());
     }
 
     private Message[] readAllMessages() {
@@ -93,7 +97,7 @@ public class ConversationStorageManager {
         List<Message> list = new LinkedList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line, message;
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 message = line.substring(line.indexOf(" ") + 1);
                 list.add(Message.fromString(message));
             }
@@ -106,17 +110,17 @@ public class ConversationStorageManager {
     public Message getLastMessage() {
         String last = readLast(messagesPath);
         if (last == null) return null;
-        return Message.fromString(last);
+        return Message.fromString(last.substring(last.indexOf(' ') + 1));
     }
 
     private String readLast(String path) {
         if (!new File(path).exists()) return null;
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-            String line;
-            do {
-                line = reader.readLine();
-            } while (line != null);
-            return line;
+            String line, lastLine = null;
+            while ((line = reader.readLine()) != null) {
+                lastLine = line;
+            }
+            return lastLine;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -125,9 +129,24 @@ public class ConversationStorageManager {
 
     private void append(String path, String line) {
         File file = new File(path);
-        if (file.length() > 0 && !line.startsWith("\n")) line = "\n" + line;
-        try (FileChannel sbc = FileChannel.open(file.toPath(), StandardOpenOption.APPEND)) {
+        try {
+            if (!file.exists()) file.createNewFile();
+            else if (file.length() > 0 && !line.startsWith("\n")) line = "\n" + line;
+            FileChannel sbc = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
             sbc.write(ByteBuffer.wrap(line.getBytes()));
+            sbc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void write(String path, String content) {
+        File file = new File(path);
+        try {
+            if (!file.exists()) file.createNewFile();
+            FileChannel sbc = FileChannel.open(file.toPath(), StandardOpenOption.WRITE);
+            sbc.write(ByteBuffer.wrap(content.getBytes()));
+            sbc.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

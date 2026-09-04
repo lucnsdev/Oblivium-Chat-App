@@ -193,7 +193,7 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
 
         if (invite.username.equals(appName)) convertView.findViewById(R.id.iconVerified).setVisibility(View.VISIBLE);
         TextView textUsername = convertView.findViewById(R.id.textUsername);
-        TextView textDatetime = convertView.findViewById(R.id.textDatetime);
+        TextView textDatetime = convertView.findViewById(R.id.textDateTime);
 
         textUsername.setText(invite.username);
         textDatetime.setText(Utils.retrieveTime(invite.timestamp));

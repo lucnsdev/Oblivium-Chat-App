@@ -2,10 +2,13 @@ package lucns.oblivium.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -43,6 +46,16 @@ public class PersonsAdapter extends ArrayAdapter<Person> {
     @Override
     public Person getItem(int position) {
         return list.get(position);
+    }
+
+    public void update(Person person) {
+        for (int position = 0; position < list.size(); position++) {
+            if (person.username.equals(list.get(position).username)) {
+                list.set(position, person);
+                notifyDataSetChanged();
+                break;
+            }
+        }
     }
 
     private void reorder() {
@@ -100,10 +113,22 @@ public class PersonsAdapter extends ArrayAdapter<Person> {
 
         if (person.username.equals(appName)) convertView.findViewById(R.id.iconVerified).setVisibility(View.VISIBLE);
         TextView textUsername = convertView.findViewById(R.id.textUsername);
-        TextView textDatetime = convertView.findViewById(R.id.textDatetime);
+        TextView textDateTime = convertView.findViewById(R.id.textDateTime);
+        TextView textMessage = convertView.findViewById(R.id.textMessage);
+        if (person.lastMessage != null)  {
+            textMessage.setText(person.lastMessage.text.content);
+            if (person.lastMessage.username.equals(user.getUsername())) {
+                ImageView iconStatus = convertView.findViewById(R.id.iconStatus);
+                iconStatus.setVisibility(View.VISIBLE);
+                if (person.lastMessage.text.sent) iconStatus.setImageResource(R.drawable.icon_double_check);
+            } else {
+                LinearLayout rootMessage = convertView.findViewById(R.id.rootMessage);
+                rootMessage.removeViewAt(0);
+            }
+        }
 
-        textUsername.setText(person.username);
-        textDatetime.setText(Utils.retrieveTime(person.timestamp));
+        textUsername.setText("@" + person.username);
+        textDateTime.setText(Utils.getDateTime(person.getTimestamp()));
 
         if (getCount() == 1) {
             convertView.setBackgroundResource(R.drawable.item_rounded_background);

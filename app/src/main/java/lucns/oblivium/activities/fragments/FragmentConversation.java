@@ -1,11 +1,11 @@
 package lucns.oblivium.activities.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.util.Log;
@@ -32,7 +32,7 @@ import java.util.Queue;
 import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.activities.MainActivity;
-import lucns.oblivium.adapters.ConversationAdapter;
+import lucns.oblivium.adapters.MessagesAdapter;
 import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
@@ -53,7 +53,7 @@ public class FragmentConversation extends FragmentView {
     private TextView textEmpty;
     private EditText editText;
     private LinearLayout rootEditText;
-    private ConversationAdapter listAdapter;
+    private MessagesAdapter listAdapter;
     private HorizontalIndeterminateThreeBalls threeBalls;
     private IdCatcher idCatcher;
     private CustomDialog dialog;
@@ -63,7 +63,7 @@ public class FragmentConversation extends FragmentView {
 
     public FragmentConversation(Activity activity) {
         super(activity);
-        this.listAdapter = new ConversationAdapter(activity);
+        this.listAdapter = new MessagesAdapter(activity);
         this.dialog = new CustomDialog(activity);
         this.appName = activity.getString(R.string.app_name).toLowerCase();
         this.user = User.getInstance();
@@ -102,7 +102,9 @@ public class FragmentConversation extends FragmentView {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.buttonBack) {
+                    person = null;
                     ((MainActivity) getActivity()).goToPersons();
+                    listAdapter.removeAll();
                 } else if (v.getId() == R.id.buttonSend) {
                     Editable editable = editText.getText();
                     String text = editable.toString().trim();
@@ -115,8 +117,11 @@ public class FragmentConversation extends FragmentView {
                     textEmpty.setVisibility(INVISIBLE);
                     threeBalls.setVisibility(INVISIBLE);
 
+                    person.lastMessage = message;
+                    ((MainActivity) getActivity()).updatePersonItem(person);
                     conversationStorageManager.setPerson(person);
                     conversationStorageManager.appendMessage(message);
+                    scrollMessages();
                     if (!Utils.hasInternetConnection() || fcmRegisterId == null) {
                         queue.add(message);
                     } else {
@@ -166,6 +171,16 @@ public class FragmentConversation extends FragmentView {
 
     public void putMessage(Message message) {
         listAdapter.add(message);
+        scrollMessages();
+    }
+
+    private void scrollMessages() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                listView.smoothScrollToPosition(listView.getAdapter().getCount() - 1);
+            }
+        }, 250);
     }
 
     public Person getPerson() {
@@ -203,6 +218,7 @@ public class FragmentConversation extends FragmentView {
                 threeBalls.setVisibility(INVISIBLE);
                 listAdapter.setAll(messages);
                 listView.setVisibility(VISIBLE);
+                scrollMessages();
             }
         });
         conversationStorageManager.requestConversation();
@@ -298,12 +314,12 @@ public class FragmentConversation extends FragmentView {
 
         protected void request() {
             DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName);
-            databaseReference = databaseReference.child(Constants.USERS).child(p.username).child("fcm_register_id");
+            databaseReference = databaseReference.child(Constants.USERS).child(p.username).child(Constants.FCM_ID);
             databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     String id = dataSnapshot.getValue(String.class);
-                    if (id != null && id.equals(p.registerId)) {
+                    if (id != null && !id.equals(p.registerId)) {
                         PersonsManager.getInstance(getActivity()).writePerson(p);
                         p.registerId = id;
                     }
@@ -321,6 +337,7 @@ public class FragmentConversation extends FragmentView {
 
     @Override
     public boolean onBackPressed() {
+        person = null;
         listAdapter.removeAll();
         listView.setVisibility(INVISIBLE);
         ((MainActivity) getActivity()).goToPersons();

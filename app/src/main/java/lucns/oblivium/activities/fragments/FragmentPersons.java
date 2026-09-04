@@ -34,6 +34,7 @@ import lucns.oblivium.activities.LogoutActivity;
 import lucns.oblivium.activities.MainActivity;
 import lucns.oblivium.adapters.PersonsAdapter;
 import lucns.oblivium.data.User;
+import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
@@ -52,7 +53,7 @@ public class FragmentPersons extends FragmentView {
     private ListView listView;
     private TextView textTime;
     private HorizontalIndeterminateThreeBalls threeBalls;
-    private PersonsAdapter personsAdapter;
+    private PersonsAdapter listAdapter;
 
     public FragmentPersons(Activity activity, PersonsManager personsManager) {
         super(activity);
@@ -68,15 +69,15 @@ public class FragmentPersons extends FragmentView {
         dialog = new CustomDialog(getActivity());
         threeBalls = findViewById(R.id.threeBalls);
 
-        personsAdapter = new PersonsAdapter(getActivity());
+        listAdapter = new PersonsAdapter(getActivity());
         buttonInvite = findViewById(R.id.buttonInvite);
         textTime = findViewById(R.id.textTime);
         listView = findViewById(R.id.listView);
-        listView.setAdapter(personsAdapter);
+        listView.setAdapter(listAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Person person = personsAdapter.getItem(position);
+                Person person = listAdapter.getItem(position);
                 ((MainActivity) getActivity()).goToConversation(person);
             }
         });
@@ -123,7 +124,7 @@ public class FragmentPersons extends FragmentView {
                                 listView.setVisibility(INVISIBLE);
                                 textTime.setText(R.string.no_contact);
                                 buttonInvite.setVisibility(INVISIBLE);
-                                personsAdapter.removeAll();
+                                listAdapter.removeAll();
                                 personsManager.deleteAll();
                                 if (!Utils.hasInternetConnection()) {
                                     user.logout();
@@ -177,6 +178,21 @@ public class FragmentPersons extends FragmentView {
         }
     }
 
+    public void updatePerson(Person person) {
+        listAdapter.update(person);
+    }
+
+    public void updatePersonByMessage(Message message) {
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            Person person = listAdapter.getItem(i);
+            if (person.username.equals(message.username)) {
+                person.lastMessage = message;
+                listAdapter.update(person);
+                break;
+            }
+        }
+    }
+
     public void update() {
         Person[] persons = personsManager.getPersons();
         if (persons == null || persons.length == 0) {
@@ -189,7 +205,7 @@ public class FragmentPersons extends FragmentView {
         textTime.setText(String.format(Locale.getDefault(), getString(R.string.persons_count), persons.length, persons.length == 1 ? "" : "s"));
         listView.setVisibility(VISIBLE);
         buttonInvite.setVisibility(INVISIBLE);
-        personsAdapter.setAll(Arrays.asList(persons));
+        listAdapter.setAll(Arrays.asList(persons));
     }
 
     @Override

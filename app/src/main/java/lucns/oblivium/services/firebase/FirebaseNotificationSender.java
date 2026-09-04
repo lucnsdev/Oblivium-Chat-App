@@ -31,7 +31,7 @@ public class FirebaseNotificationSender {
 
     public void sendNotification(String username, String action) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(appName);
-        databaseReference = databaseReference.child(Constants.USERS).child(username).child("fcm_register_id");
+        databaseReference = databaseReference.child(Constants.USERS).child(username).child(Constants.FCM_ID);
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

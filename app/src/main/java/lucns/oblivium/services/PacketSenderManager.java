@@ -80,6 +80,7 @@ public class PacketSenderManager {
             handler.postDelayed(runnable, Math.max(DELAY_BETWEEN_SEND - difference, 100));
             return;
         }
+        if (queue.isEmpty()) return;
         Packet packet = queue.remove();
         sender.setDestineRegisterId(packet.person.registerId);
         map.put(sender.put(packet.message.toSend()), packet);

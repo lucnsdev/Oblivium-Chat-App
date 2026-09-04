@@ -44,13 +44,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        //Log.d("Lucas", "onMessageReceived");
+        Log.d("Lucas", "onMessageReceived");
         Map<String, String> map = remoteMessage.getData();
         if (!user.hasCredentials()) {
             Log.i("FirebaseMessagingService", "Message received with User unbounded!");
             return;
         }
-        if (!map.isEmpty()) {
+        if (map.isEmpty()) {
+            Log.e("FirebaseMessagingService", "Map is empty");
+        } else {
             String action = map.get(Constants.ACTION);
             String data = map.get(Constants.DATA);
             handler.post(new Runnable() {
@@ -127,7 +129,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 public void onCancelled(DatabaseError databaseError) {
                 }
             });
-            databaseReference.child(Constants.USERS).child(user.getUsername()).child("fcm_register_id").setValue(installationId);
+            databaseReference.child(Constants.USERS).child(user.getUsername()).child(Constants.FCM_ID).setValue(installationId);
         }
 
         /*

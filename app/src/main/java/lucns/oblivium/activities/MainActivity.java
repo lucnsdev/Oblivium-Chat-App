@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -47,6 +48,7 @@ public class MainActivity extends Activity {
 
     private User user;
     private FragmentConversation fragmentConversation;
+    private FragmentPersons fragmentPersons;
     private SliderView sliderView;
     private AppStateRegister stateRegister;
 
@@ -61,7 +63,7 @@ public class MainActivity extends Activity {
 
         PersonsManager personsManager = PersonsManager.getInstance(this);
         fragmentConversation = new FragmentConversation(this);
-        FragmentPersons fragmentPersons = new FragmentPersons(this, personsManager);
+        fragmentPersons = new FragmentPersons(this, personsManager);
         personsManager.setCallback(new PersonsManager.Callback() {
             @Override
             public void onPersonsAvailable() {
@@ -73,12 +75,12 @@ public class MainActivity extends Activity {
         sliderView.addFragment(fragmentPersons);
         sliderView.addFragment(fragmentConversation);
 
-        registerReceiver(messagesReceiver, new IntentFilter(Constants.ACTION_MESSAGE), Context.RECEIVER_NOT_EXPORTED);
+        registerReceiver(messagesReceiver, new IntentFilter(Constants.ACTION_MESSAGE), Context.RECEIVER_EXPORTED);
         getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);
     }
 
     public void updatePersonItem(Person person) {
-        // update last message in list item
+        fragmentPersons.updatePerson(person);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class MainActivity extends Activity {
     private void sendUserDataToServer() {
         Map<String, Object> map = new HashMap<>();
         map.put("access_timestamp", System.currentTimeMillis());
-        if (user.isPendingShipment()) map.put("fcm_register_id", user.getRegisterId());
+        if (user.isPendingShipment()) map.put(Constants.FCM_ID, user.getRegisterId());
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -172,12 +174,14 @@ public class MainActivity extends Activity {
     private final BroadcastReceiver messagesReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Utils.vibrate();
             Message message = Message.fromString(intent.getStringExtra(Constants.DATA));
             Person person = fragmentConversation.getPerson();
-            if (person.username.equals(message.username)) {
+            if (person != null && person.username.equals(message.username)) {
                 fragmentConversation.putMessage(message);
             } else {
-                Notify.showToast(String.format(Locale.getDefault(), getString(R.string.format_toast_message), person.username, message.text.content));
+                fragmentPersons.updatePersonByMessage(message);
+                Notify.showLongToast(String.format(Locale.getDefault(), getString(R.string.format_toast_message), message.username, message.text.content));
             }
         }
     };

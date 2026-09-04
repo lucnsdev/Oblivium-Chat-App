@@ -30,7 +30,7 @@ public class Message {
         try {
             message = new Message(jsonObject.getString("username"), jsonObject.getLong("timestamp"));
             JSONObject jsonText = jsonObject.getJSONObject("text");
-            message.text = new Text(jsonText.getString("text"));
+            message.text = new Text(jsonText.getString("content"));
             message.text.sent = jsonText.getBoolean("sent");
             JSONObject jsonFile = jsonObject.optJSONObject("file");
             if (jsonFile != null) {
@@ -71,6 +71,7 @@ public class Message {
         try {
             jsonObject.put(Constants.ACTION, Constants.ACTION_MESSAGE);
             jsonObject.put(Constants.DATA, toString());
+            return jsonObject;
         } catch (JSONException e) {
             e.printStackTrace();
         }
