@@ -152,15 +152,15 @@ public class InviteActivity extends Activity {
                     Utils.pulsate();
                     return;
                 }
-                dialog.dismiss();
-                dialog.showDialogWait(R.string.inviting);
-                if (username[0].startsWith("@")) username[0] = username[0].substring(1);
-
                 if (!Utils.hasInternetConnection()) {
                     Notify.showToast(R.string.error_no_connection);
                     Utils.pulsate();
                     return;
                 }
+                dialog.dismiss();
+                dialog.showDialogWait(R.string.inviting);
+                if (username[0].startsWith("@")) username[0] = username[0].substring(1);
+
                 inviteFriend(username[0]);
             }
         }, new TextWatcher() {

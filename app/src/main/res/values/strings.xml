@@ -56,10 +56,11 @@
     <string name="files">Files</string>
     <string name="videos">Videos</string>
     <string name="images">Images</string>
+    <string name="arrived_message">New message arrived. Touch to open.</string>
 
     <string name="correct_password">Correct Password</string>
     <string name="back">Back</string>
-    <string name="fowrard_continue">Continue</string>
+    <string name="forward_continue">Continue</string>
     <string name="wrong_password">Wrong password.</string>
     <string name="wrong_password_description">You can log in with another user or create a new one.</string>
     <string name="connection_failure">Connection Failure!</string>
@@ -79,6 +80,8 @@
     <string name="format_minutes">%d minute%s ago</string>
     <string name="format_hours">%d hour%s ago</string>
     <string name="format_days">%d day%s ago</string>
+    <string name="format_toast_message">%s says:\n%s</string>
+    <string name="format_arrived_message">New message by %s</string>
 
     <string name="error_no_connection">No internet connection.</string>
     <string name="error_retry">Network error. Touch to retry.</string>

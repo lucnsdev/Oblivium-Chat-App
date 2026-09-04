@@ -84,7 +84,7 @@ public class ConversationStorageManager {
     }
 
     public void appendMessage(Message message) {
-        append(messagesPath,  message.toString());
+        append(messagesPath,  message.timestamp + " " + message.toString());
     }
 
     private Message[] readAllMessages() {
@@ -92,9 +92,10 @@ public class ConversationStorageManager {
         if (!file.exists()) return null;
         List<Message> list = new LinkedList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
+            String line, message;
             while((line = reader.readLine()) != null) {
-                list.add(Message.fromString(line));
+                message = line.substring(line.indexOf(" ") + 1);
+                list.add(Message.fromString(message));
             }
         } catch (IOException e) {
             e.printStackTrace();

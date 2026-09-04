@@ -9,6 +9,7 @@ import android.os.CombinedVibration;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
+import android.util.Log;
 
 import java.util.Locale;
 
@@ -94,5 +95,14 @@ public class Utils {
         } else {
             return c.getString(R.string.several_days);
         }
+    }
+
+    public static String getDateTime(long timestamp) {
+        Context c = App.getContext();
+        long difference = (System.currentTimeMillis() - timestamp) / 1000;
+        if (difference < 60) return c.getString(R.string.few_seconds);
+        else if (difference < 3600) return String.format(Locale.getDefault(), c.getString(R.string.format_minutes), difference / 60, difference / 60 == 1 ? "" : "s");
+        else if (difference < 86400) return String.format(Locale.getDefault(), c.getString(R.string.format_hours), difference / 3600, difference / 3600 == 1 ? "" : "s");
+        else return String.format(Locale.getDefault(), c.getString(R.string.format_days), difference / 86400, difference / 86400 == 1 ? "" : "s");
     }
 }

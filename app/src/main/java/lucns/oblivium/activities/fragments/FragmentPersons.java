@@ -51,6 +51,7 @@ public class FragmentPersons extends FragmentView {
     private RelativeLayout buttonInvite;
     private ListView listView;
     private TextView textTime;
+    private HorizontalIndeterminateThreeBalls threeBalls;
     private PersonsAdapter personsAdapter;
 
     public FragmentPersons(Activity activity, PersonsManager personsManager) {
@@ -65,7 +66,7 @@ public class FragmentPersons extends FragmentView {
         appName = getActivity().getString(R.string.app_name).toLowerCase();
         User user = User.getInstance();
         dialog = new CustomDialog(getActivity());
-        HorizontalIndeterminateThreeBalls threeBalls = findViewById(R.id.threeBalls);
+        threeBalls = findViewById(R.id.threeBalls);
 
         personsAdapter = new PersonsAdapter(getActivity());
         buttonInvite = findViewById(R.id.buttonInvite);
@@ -143,7 +144,11 @@ public class FragmentPersons extends FragmentView {
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(R.menu.menu_contacts, popupMenu.getMenu());
         if (Utils.hasInternetConnection()) {
-            if (!personsManager.hasPersons()) threeBalls.setVisibility(VISIBLE);
+            if (!personsManager.hasPersons()) {
+                buttonRetry.setVisibility(INVISIBLE);
+                buttonInvite.setVisibility(INVISIBLE);
+                threeBalls.setVisibility(VISIBLE);
+            }
             DatabaseReference database = FirebaseDatabase.getInstance().getReference().child(getString(R.string.app_name).toLowerCase());
             DatabaseReference userRef = database.child(Constants.USERS).child(user.getUsername()).child("persons");
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -157,7 +162,7 @@ public class FragmentPersons extends FragmentView {
                             list.add(new Person(snapshot.getKey(), null, (Long) map.get("timestamp")));
                         }
                         personsManager.comparePersons(list.toArray(new Person[0]));
-                    } else {
+                    } else if (!personsManager.hasPersons()) {
                         buttonInvite.setVisibility(VISIBLE);
                     }
                     threeBalls.setVisibility(INVISIBLE);
@@ -177,6 +182,7 @@ public class FragmentPersons extends FragmentView {
         if (persons == null || persons.length == 0) {
             textTime.setText(R.string.no_contact);
             listView.setVisibility(INVISIBLE);
+            threeBalls.setVisibility(INVISIBLE);
             buttonInvite.setVisibility(VISIBLE);
             return;
         }

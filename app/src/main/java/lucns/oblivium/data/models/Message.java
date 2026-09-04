@@ -3,6 +3,8 @@ package lucns.oblivium.data.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import lucns.oblivium.utils.Constants;
+
 public class Message {
 
     public static final String DELIMITER = "=";
@@ -62,6 +64,17 @@ public class Message {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    public JSONObject toSend() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.ACTION, Constants.ACTION_MESSAGE);
+            jsonObject.put(Constants.DATA, toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static Message fromString(String json) {

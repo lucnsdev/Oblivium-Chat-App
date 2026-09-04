@@ -10,6 +10,7 @@ public class User {
     private String username, registerId;
     private long loginTimestamp;
     private boolean isPendingShipment;
+    private boolean signed;
 
     private static User instance;
 
@@ -26,7 +27,7 @@ public class User {
     protected User() {}
 
     public boolean hasCredentials() {
-        return registerId != null;
+        return signed && registerId != null;
     }
 
     public void setUsername(String username) {
@@ -61,6 +62,10 @@ public class User {
         this.loginTimestamp = loginTimestamp;
     }
 
+    public void setSigned() {
+        signed = true;
+    }
+
     public void save() {
         if (username == null) return;
         JSONObject jsonObject = new JSONObject();
@@ -69,6 +74,7 @@ public class User {
             jsonObject.put("fcm_register_id", registerId);
             jsonObject.put("login_timestamp", loginTimestamp);
             jsonObject.put("is_pending_shipment", isPendingShipment);
+            jsonObject.put("signed", signed);
             new Annotator("user", "User.json").setContent(jsonObject.toString(4));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -84,16 +90,15 @@ public class User {
             registerId = jsonObject.getString("fcm_register_id");
             loginTimestamp = jsonObject.getLong("login_timestamp");
             isPendingShipment = jsonObject.getBoolean("is_pending_shipment");
+            signed = jsonObject.getBoolean("signed");
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     public void logout() {
-
         new Annotator("user", "user.json").delete();
         registerId = null;
         isPendingShipment = false;
-
     }
 }

@@ -238,7 +238,7 @@ public class InvitationsAdapter extends ArrayAdapter<Invite> {
         dialog.showDialogWait(R.string.invite_accepting);
         long now = System.currentTimeMillis();
         Map<String, Object> userMap = new HashMap<>();
-        userMap.put("timestamp", now);
+        userMap.put(Constants.TIMESTAMP, now);
         Map<String, Object> map = new HashMap<>();
         map.put(username + "/invitations/" + user.getUsername(), null);
         map.put(user.getUsername() + "/invitations/" + username, null);

@@ -84,7 +84,7 @@ public class CustomDialog {
     }
 
     public void showDialogConfirmation(int title, int description, View.OnClickListener onClickListener) {
-        showDialogConfirmation(activity.getString(title), activity.getString(description), activity.getString(R.string.fowrard_continue), activity.getString(R.string.back), onClickListener);
+        showDialogConfirmation(activity.getString(title), activity.getString(description), activity.getString(R.string.forward_continue), activity.getString(R.string.back), onClickListener);
     }
 
     public void showDialogConfirmation(int title, int description, int textButtonPositive, int textButtonNegative, View.OnClickListener onClickListener) {

@@ -53,6 +53,7 @@ public class PersonsManager {
         if (persons == null) {
             persons = new Person[]{person};
             writePerson(person);
+            callback.onPersonsAvailable();
             return;
         }
         Person[] persons2 = new Person[persons.length + 1];

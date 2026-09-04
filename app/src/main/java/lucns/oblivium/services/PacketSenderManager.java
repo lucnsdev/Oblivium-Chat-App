@@ -82,7 +82,7 @@ public class PacketSenderManager {
         }
         Packet packet = queue.remove();
         sender.setDestineRegisterId(packet.person.registerId);
-        map.put(sender.put(packet.message.toJSONObject()), packet);
+        map.put(sender.put(packet.message.toSend()), packet);
     }
 
     public void put(Packet packet) {

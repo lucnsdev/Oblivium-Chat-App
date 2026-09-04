@@ -35,22 +35,21 @@ public class FirebaseNotificationSender {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String id = dataSnapshot.getValue(String.class);
-                Person person = new Person(username, id, System.currentTimeMillis());
-                PersonsManager.getInstance(context).addPerson(person);
-
+                String fcmId = dataSnapshot.getValue(String.class);
                 JSONObject jsonObject = new JSONObject();
                 try {
+                    JSONObject jsonData = new JSONObject();
+                    jsonData.put(Constants.USERNAME, user.getUsername());
+                    jsonData.put(Constants.TIMESTAMP, System.currentTimeMillis());
+                    jsonData.put(Constants.FCM_ID, fcmId);
                     jsonObject.put(Constants.ACTION, action);
-                    jsonObject.put(Constants.USERNAME, user.getUsername());
-                    jsonObject.put(Constants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    jsonObject.put(Constants.ID, id);
+                    jsonObject.put(Constants.DATA, jsonData.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                     return;
                 }
                 FirebaseMessagingSender sender = new FirebaseMessagingSender(context, null);
-                sender.setDestineRegisterId(id);
+                sender.setDestineRegisterId(fcmId);
                 sender.put(jsonObject);
             }
 

@@ -19,6 +19,7 @@ import lucns.oblivium.R;
 import lucns.oblivium.activities.CustomDialog;
 import lucns.oblivium.data.User;
 import lucns.oblivium.data.models.Message;
+import lucns.oblivium.utils.Utils;
 
 public class ConversationAdapter extends ArrayAdapter<Message> {
 
@@ -76,7 +77,9 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
     @Override
     public void add(Message message) {
         list.add(message);
-        views = new View[list.size()];
+        View[] v = new View[views.length + 1];
+        System.arraycopy(views, 0, v, 0, views.length);
+        views = v;
         reorder();
         notifyDataSetChanged();
     }
@@ -107,7 +110,7 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
             ((ImageView) views[index].findViewById(R.id.iconStatus)).setImageResource(message.text.sent ? R.drawable.icon_double_check : R.drawable.icon_clock);
         }
         ((TextView) views[index].findViewById(R.id.textMessage)).setText(message.text.content);
-        ((TextView) views[index].findViewById(R.id.textDateTime)).setText(getDateTime(message.timestamp));
+        ((TextView) views[index].findViewById(R.id.textDateTime)).setText(Utils.getDateTime(message.timestamp));
     }
 
     @Override
@@ -115,17 +118,5 @@ public class ConversationAdapter extends ArrayAdapter<Message> {
         Message message = list.get(position);
         update(message);
         return views[position];
-    }
-
-    private String getDateTime(long timestamp) {
-        long difference = System.currentTimeMillis() - timestamp;
-        if (difference < 60) return getString(R.string.few_seconds);
-        else if (difference < 3600) return String.format(Locale.getDefault(), getString(R.string.format_minutes), difference / 60, difference / 60 == 1 ? "" : "s");
-        else if (difference < 86400) return String.format(Locale.getDefault(), getString(R.string.format_hours), difference / 3600, difference / 3600 == 1 ? "" : "s");
-        else return String.format(Locale.getDefault(), getString(R.string.format_days), difference / 86400, difference / 86400 == 1 ? "" : "s");
-    }
-
-    private String getString(int res) {
-        return getContext().getString(res);
     }
 }

@@ -1,7 +1,10 @@
 package lucns.oblivium.activities;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.net.Uri;
@@ -23,13 +26,16 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import lucns.oblivium.R;
 import lucns.oblivium.activities.fragments.FragmentConversation;
 import lucns.oblivium.activities.fragments.FragmentPersons;
 import lucns.oblivium.data.User;
+import lucns.oblivium.data.models.Message;
 import lucns.oblivium.data.models.Person;
+import lucns.oblivium.services.AppStateRegister;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
@@ -42,6 +48,7 @@ public class MainActivity extends Activity {
     private User user;
     private FragmentConversation fragmentConversation;
     private SliderView sliderView;
+    private AppStateRegister stateRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         user = User.getInstance();
+        stateRegister = AppStateRegister.getInstance();
 
         PersonsManager personsManager = PersonsManager.getInstance(this);
         fragmentConversation = new FragmentConversation(this);
@@ -65,6 +73,7 @@ public class MainActivity extends Activity {
         sliderView.addFragment(fragmentPersons);
         sliderView.addFragment(fragmentConversation);
 
+        registerReceiver(messagesReceiver, new IntentFilter(Constants.ACTION_MESSAGE), Context.RECEIVER_NOT_EXPORTED);
         getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);
     }
 
@@ -76,6 +85,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(callback);
+        unregisterReceiver(messagesReceiver);
     }
 
     private final OnBackInvokedCallback callback = new OnBackInvokedCallback() {
@@ -98,7 +108,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        stateRegister.setState(true);
         checkRegistrationId();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stateRegister.setState(false);
     }
 
     private void checkRegistrationId() {
@@ -106,7 +123,7 @@ public class MainActivity extends Activity {
             Notify.showToast(R.string.error_no_connection);
             return;
         }
-        if (new TimeRegister("fcm_registration").isOverTime(60 * 24 * 7)) {
+        if (user.hasCredentials() && new TimeRegister("fcm_registration").isOverTime(60 * 24 * 7)) {
             FirebaseInstallations.getInstance().getId().addOnCompleteListener(task -> {
                 if (!task.isSuccessful() || task.getResult() == null) {
                     return;
@@ -151,4 +168,17 @@ public class MainActivity extends Activity {
         Uri uri = data.getData();
         fragmentConversation.onFilePicked(uri);
     }
+
+    private final BroadcastReceiver messagesReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Message message = Message.fromString(intent.getStringExtra(Constants.DATA));
+            Person person = fragmentConversation.getPerson();
+            if (person.username.equals(message.username)) {
+                fragmentConversation.putMessage(message);
+            } else {
+                Notify.showToast(String.format(Locale.getDefault(), getString(R.string.format_toast_message), person.username, message.text.content));
+            }
+        }
+    };
 }

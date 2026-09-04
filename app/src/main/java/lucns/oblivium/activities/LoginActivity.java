@@ -280,6 +280,7 @@ public class LoginActivity extends Activity {
             user.setUsername(username);
             user.setLoginTimestamp(now);
             user.setRegisterId(registerId);
+            user.setSigned();
             user.save();
 
             Map<String, Object> map = new HashMap<>();

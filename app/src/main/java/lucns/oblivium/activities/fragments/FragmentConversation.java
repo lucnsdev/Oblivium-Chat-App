@@ -45,7 +45,7 @@ import lucns.oblivium.views.FragmentView;
 import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
 
 public class FragmentConversation extends FragmentView {
-    private TextView textUsername;
+    private TextView textUsername, textTime;
     private Person person;
     private PacketSenderManager packetSenderManager;
     private final String appName;
@@ -89,6 +89,7 @@ public class FragmentConversation extends FragmentView {
     public void onCreate() {
         setContentView(R.layout.fragment_conversation);
         textUsername = findViewById(R.id.textUsername);
+        textTime = findViewById(R.id.textTime);
         textEmpty = findViewById(R.id.textEmpty);
         listView = findViewById(R.id.listView);
         listView.setAdapter(listAdapter);
@@ -163,12 +164,21 @@ public class FragmentConversation extends FragmentView {
         }
     }
 
+    public void putMessage(Message message) {
+        listAdapter.add(message);
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
     public void setPerson(Person person) {
         this.person = person;
         this.fcmRegisterId = null;
         rootEditText.setVisibility(INVISIBLE);
         if (person.username.equals(getString(R.string.app_name).toLowerCase())) findViewById(R.id.iconVerified).setVisibility(VISIBLE);
         textUsername.setText("@" + person.username);
+        textTime.setText(Utils.getDateTime(person.getTimestamp()));
         threeBalls.setVisibility(VISIBLE);
         listView.setVisibility(INVISIBLE);
         if (idCatcher != null) idCatcher.cancel();
