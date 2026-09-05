@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <lucns.oblivium.views.SliderView
+    <lucns.oblivium.views.slider.SliderView
         android:id="@+id/sliderView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

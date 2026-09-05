@@ -6,12 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -22,10 +18,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.installations.FirebaseInstallations;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -42,7 +34,7 @@ import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Notify;
 import lucns.oblivium.utils.TimeRegister;
 import lucns.oblivium.utils.Utils;
-import lucns.oblivium.views.SliderView;
+import lucns.oblivium.views.slider.SliderView;
 
 public class MainActivity extends Activity {
 
@@ -77,6 +69,13 @@ public class MainActivity extends Activity {
 
         registerReceiver(messagesReceiver, new IntentFilter(Constants.ACTION_MESSAGE), Context.RECEIVER_EXPORTED);
         getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback);
+    }
+
+    public boolean idReduced = false;
+
+    public void reduce() {
+        idReduced = !idReduced;
+        sliderView.reduceRoot(idReduced ? 700 : 0);
     }
 
     public void updatePersonItem(Person person) {

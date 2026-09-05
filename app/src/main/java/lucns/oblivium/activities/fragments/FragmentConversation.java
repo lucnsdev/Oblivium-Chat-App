@@ -41,7 +41,7 @@ import lucns.oblivium.services.PacketSenderManager;
 import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.Utils;
-import lucns.oblivium.views.FragmentView;
+import lucns.oblivium.views.slider.FragmentView;
 import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
 
 public class FragmentConversation extends FragmentView {
@@ -97,6 +97,13 @@ public class FragmentConversation extends FragmentView {
         editText = findViewById(R.id.editText);
         rootEditText = findViewById(R.id.rootEditText);
 
+        setOnSizeChangedListener(new OnSizeChangedListener() {
+            @Override
+            public void onSizeChanged() {
+                scrollMessages();
+            }
+        });
+
         ConversationStorageManager conversationStorageManager = new ConversationStorageManager(getActivity());
         View.OnClickListener onClickListener = new OnClickListener() {
             @Override
@@ -147,12 +154,15 @@ public class FragmentConversation extends FragmentView {
                             getActivity().startActivityForResult(intent, 1234);
                         }
                     });
+                } else if (v.getId() == R.id.buttonMenu) {
+                    ((MainActivity) getActivity()).reduce();
                 }
             }
         };
         findViewById(R.id.buttonBack).setOnClickListener(onClickListener);
         findViewById(R.id.buttonSend).setOnClickListener(onClickListener);
         findViewById(R.id.buttonAttach).setOnClickListener(onClickListener);
+        findViewById(R.id.buttonMenu).setOnClickListener(onClickListener);
     }
 
     private void sendMessage(Message message) {
@@ -175,12 +185,12 @@ public class FragmentConversation extends FragmentView {
     }
 
     private void scrollMessages() {
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+        listView.post(new Runnable() {
             @Override
             public void run() {
                 listView.smoothScrollToPosition(listView.getAdapter().getCount() - 1);
             }
-        }, 250);
+        });
     }
 
     public Person getPerson() {
@@ -277,11 +287,6 @@ public class FragmentConversation extends FragmentView {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public View getMobileView() {
-        return rootEditText;
     }
 
     @Override

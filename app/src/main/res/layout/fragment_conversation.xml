@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/toolbar"
@@ -99,7 +98,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
-        android:layout_marginTop="@dimen/margin_3"
         android:divider="@android:color/transparent"
         android:dividerHeight="4dp"
         android:listSelector="@android:color/transparent"
@@ -114,7 +112,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="@dimen/margin_5"
         android:layout_marginBottom="@dimen/margin_8"
-        android:background="@drawable/edittext_background"
+        android:background="@drawable/edittext_message"
         android:orientation="horizontal"
         android:paddingStart="@dimen/margin_3">
 

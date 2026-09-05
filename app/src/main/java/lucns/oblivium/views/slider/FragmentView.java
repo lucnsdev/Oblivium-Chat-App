@@ -1,4 +1,4 @@
-package lucns.oblivium.views;
+package lucns.oblivium.views.slider;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,10 +6,16 @@ import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 public abstract class FragmentView extends RelativeLayout {
 
+    public interface OnSizeChangedListener {
+        void onSizeChanged();
+    }
+
+    private OnSizeChangedListener onSizeChangedListener;
     private View root;
     private Activity activity;
     private int index;
@@ -27,9 +33,8 @@ public abstract class FragmentView extends RelativeLayout {
         initialize();
     }
 
-    public FragmentView(Activity activity, AttributeSet attrs) {
-        super(activity, attrs);
-        initialize();
+    public void setOnSizeChangedListener(OnSizeChangedListener onSizeChangedListener) {
+        this.onSizeChangedListener = onSizeChangedListener;
     }
 
     protected void setSlider(SliderView sliderView) {
@@ -80,10 +85,6 @@ public abstract class FragmentView extends RelativeLayout {
         onDestroy();
     }
 
-    public View getMobileView() {
-        return null;
-    }
-
     public abstract void onCreate();
 
     public abstract void onResume();
@@ -118,17 +119,22 @@ public abstract class FragmentView extends RelativeLayout {
     }
 
     @Override
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        super.setLayoutParams(params);
+        if (root == null) return;
+        ViewGroup.LayoutParams p = root.getLayoutParams();
+        boolean changed = params.width != p.width || params.height != p.height;
+        p.height = params.height;
+        root.setLayoutParams(p);
+        if (changed && onSizeChangedListener != null) onSizeChangedListener.onSizeChanged();
+    }
+
+    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         post(new Runnable() {
             @Override
             public void run() {
-                //root.setBackgroundColor(Color.TRANSPARENT);
-                /*
-                int visibility = root.getVisibility();
-                root.setVisibility(View.GONE);
-                root.setVisibility(visibility);
-                 */
                 root.requestLayout();
             }
         });

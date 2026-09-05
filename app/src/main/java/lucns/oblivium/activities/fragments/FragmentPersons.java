@@ -2,7 +2,6 @@ package lucns.oblivium.activities.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,7 +39,7 @@ import lucns.oblivium.services.PersonsManager;
 import lucns.oblivium.utils.Constants;
 import lucns.oblivium.utils.TimeRegister;
 import lucns.oblivium.utils.Utils;
-import lucns.oblivium.views.FragmentView;
+import lucns.oblivium.views.slider.FragmentView;
 import lucns.oblivium.views.HorizontalIndeterminateThreeBalls;
 
 public class FragmentPersons extends FragmentView {
